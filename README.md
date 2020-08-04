@@ -39,11 +39,10 @@ all the config values we need to run the application:
 
 After the above requirements have been met:
 
-1. Clone this repository and `cd` into it
+1. Clone this repository
 
-```bash
+```
 git clone git@github.com:twilio-labs/plugin-queued-callbacks-and-voicemail.git
-cd plugin-queued-callbacks-and-voicemail
 ```
 
 2. Change into the `public` subdirectory of the repo and run the following:
@@ -98,12 +97,16 @@ You need to deploy the functions associated with the Callback and Voicemail Flex
 
 Step 1: From the root directory of your copy of the source code, change into `public/resources` and rename `.env.example` to `.env`.
 
+```
 cd public/resources && mv .env.example .env
+```
 
 Step 2: Open `.env` with your text editor and modify TWILIO_WORKSPACE_SID with your Flex Task Assignment SID.
 
-TWILIO_WORKSPACE_SID=WSxxxxxxxxxxxxxxxxxxxxxx
- 
+```
+TWILIO_WORKSPACE_SID=WSxxxxxxxxxxxxxxxxxxxxxx`
+```
+
 To deploy your Callback and Voicemail functions and assets, run the following:
 
 ```
