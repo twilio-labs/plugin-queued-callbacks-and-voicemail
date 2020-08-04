@@ -1,0 +1,13 @@
+[
+  {
+    "name": "plugin-flex-inqueue-messaging",
+    "version": "0.0.0",
+    "class": "InQueueMessagingPlugin",
+    "requires": [
+      {
+        "@twilio/flex-ui": "^1"
+      }
+    ],
+    "src": "http://localhost:3002/plugin-flex-inqueue-messaging.js"
+  }
+]

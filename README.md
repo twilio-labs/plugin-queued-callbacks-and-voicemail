@@ -1,1 +1,2 @@
-# plugin-queued-callbacks-and-voicemail
+# flex-inqueue-messaging
+Resources for Callbacks/Voicemail management for Twilio Flex
