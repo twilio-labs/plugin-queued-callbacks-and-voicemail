@@ -25,8 +25,7 @@ To deploy this plugin, you will need:
 
 ### Twilio Account Settings
 
-This application should give you a ready-made starting point for writing your
-own appointment reminder application. Before we begin, we need to collect
+Before we begin, we need to collect
 all the config values we need to run the application:
 
 | Config&nbsp;Value | Description                                                                                                                                                  |
