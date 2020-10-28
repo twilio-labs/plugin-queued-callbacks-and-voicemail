@@ -11,22 +11,22 @@ The Queued Callback and Voicemail for Flex plugin helps Flex admins automate han
 ### Requirements
 
 To deploy this plugin, you will need:
-- An active Twilio account. [Sign up](https://www.twilio.com/try-twilio) if you don't already have one
-- A Twilio Flex instance where you have admin permissions. See our [getting started guide](https://www.twilio.com/docs/flex/quickstart/flex-basics#sign-up-for-or-sign-in-to-twilio-and-create-a-new-flex-project) to create one 
+- An active Twilio account with Flex provisioned. Refer to the [Flex Quickstart](https://www.twilio.com/docs/flex/quickstart/flex-basics#sign-up-for-or-sign-in-to-twilio-and-create-a-new-flex-project) to create one.
+- npm version 5.0.0 or later installed (type `npm -v` in your terminal to check)
+- Node version 10.12.0 or later installed (type `node -v` in your terminal to check)
 - [Twilio CLI](https://www.twilio.com/docs/twilio-cli/quickstart#install-twilio-cli) along with the [Flex CLI Plugin](https://www.twilio.com/docs/twilio-cli/plugins#available-plugins) and the [Serverless Plugin](https://www.twilio.com/docs/twilio-cli/plugins#available-plugins). Run the following commands to install them:
    ```
    # Install the Twilio CLI
    npm install twilio-cli -g
    # Install the Serverless and Flex as Plugins
    twilio plugins:install @twilio-labs/plugin-serverless
-   twilio plugins:install @twilio-labs/plugin-flex
+   twilio plugins:install @twilio-labs/plugin-flex@beta
 - A GitHub account
 - [Native Dialpad configured on your Flex instance](https://www.twilio.com/docs/flex/dialpad/enable)
 
 ### Twilio Account Settings
 
-This application should give you a ready-made starting point for writing your
-own appointment reminder application. Before we begin, we need to collect
+Before we begin, we need to collect
 all the config values we need to run the application:
 
 | Config&nbsp;Value | Description                                                                                                                                                  |
@@ -139,7 +139,32 @@ Copy and save the domain returned when you deploy a function. You will need it i
 
 If you forget to copy the domain, you can also find it by navigating to [Functions > API](https://www.twilio.com/console/functions/api) in the Twilio Console.
 
-> Debugging Tip: Pass the `-l` or logging flag to review deployment logs. For 
+> Debugging Tip: Pass the -l or logging flag to review deployment logs. For example, you can pass `-l debug` to turn on debugging logs.
+
+### Deploy your Flex Plugin 
+
+Once you have deployed the function, it is time to deploy the plugin to your Flex instance.
+
+Run the following commands in the plugin root directory. We will leverage the Twilio CLI to build and deploy the Plugin.
+
+- Rename `.env.example` to `.env`.
+- Open `.env` with your text editor and modify the `REACT_APP_SERVICE_BASE_URL` property to the Domain name you copied in the previous step. Make sure to prefix it with "https://".
+
+```
+plugin-queued-callbacks-and-voicemail $ mv .env.example .env
+
+# .env
+REACT_APP_SERVICE_BASE_URL=https://plugin-queued-callbacks-voicemail-functions-4135-dev.twil.io
+```
+
+When you are ready to deploy the plugin, run the following in a command shell:
+
+```
+plugin-queued-callbacks-and-voicemail $ twilio flex:plugins:deploy --major --changelog "Updating to use the latest Twilio CLI Flex plugin" --description "Queued callbacks and voicemail"
+``` 
+
+To enable the plugin on your contact center, follow the suggested next step on the deployment confirmation. To enable it via the Flex UI, see the [Plugins Dashboard documentation](https://www.twilio.com/docs/flex/developer/plugins/dashboard#stage-plugin-changes).
+
 
 ## License
 
