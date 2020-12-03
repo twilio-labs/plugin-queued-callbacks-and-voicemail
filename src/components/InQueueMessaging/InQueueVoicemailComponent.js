@@ -296,11 +296,6 @@ class InQueueVoicemailComponent extends React.Component {
             multiline
             rows='4'
             fullWidth
-            InputProps={{
-              style: {
-                fontSize: '9pt',
-              },
-            }}
             value={transcriptText}
             variant='outlined'
           />
