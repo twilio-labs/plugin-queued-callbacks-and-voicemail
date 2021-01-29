@@ -10,6 +10,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 // Import the Redux Actions
 import { Actions } from '../../states/ActionInQueueMessagingState';
+//Import joinUrl functionality
+import { buildUrl } from '../../helpers/urlHelper.js';
 
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
@@ -109,10 +111,8 @@ class InQueueVoicemailComponent extends React.Component {
     }
     //  get instance of Flex manager
     let mgr = Flex.Manager.getInstance();
-
-    const baseUrl = process.env.REACT_APP_SERVICE_BASE_URL;
-    console.log(baseUrl);
-    return transferTask(baseUrl + '/inqueue-utils', {
+    
+    return transferTask(buildUrl('/inqueue-utils'), {
       mode: 'UiPlugin',
       type: 'voicemail',
       Token: mgr.user.token,
@@ -124,7 +124,7 @@ class InQueueVoicemailComponent extends React.Component {
         console.log('==== cbUiPlugin web service success ====');
       })
       .catch((error) => {
-        console.log('cbUiPlugin web service error');
+        console.log('cbUiPlugin web service error' + error);
       });
   }
 
@@ -141,14 +141,13 @@ class InQueueVoicemailComponent extends React.Component {
         // referrerPolicy: "no-referrer", // no-referrer, *client
         body: JSON.stringify(data), // body data type must match "Content-Type" header
       });
-      return await response.json(); // parses JSON response into native JavaScript objects
+      return await response.json(); 
     }
 
     //  get instance of Flex manager
     let mgr = Flex.Manager.getInstance();
 
-    const baseUrl = process.env.REACT_APP_SERVICE_BASE_URL;
-    return transferTask(baseUrl + '/inqueue-utils', {
+    return transferTask(buildUrl('/inqueue-utils'), {
       mode: 'requeueTasks',
       type: 'voicemail',
       Token: mgr.user.token,
@@ -159,15 +158,13 @@ class InQueueVoicemailComponent extends React.Component {
       state: false,
     })
       .then((data) => {
-    	console.log(baseUrl);
         console.log('==== requeue web service success ====');
 
         //  enable calling on next retry
         //this.props.vmCallButtonDisable(false);
       })
       .catch((error) => {
-    	console.log(baseUrl);
-        console.log('requeue web service error');
+        console.log('requeue web service error' + error);
       });
   }
 
@@ -197,9 +194,7 @@ class InQueueVoicemailComponent extends React.Component {
     let recordSid = this.props.task.attributes.recordingSid;
     let transcriptSid = this.props.task.attributes.transcriptionSid;
 
-    const baseUrl =
-      'https://' + this.props.manager.configuration.serviceBaseUrl;
-    return deleteRecording(baseUrl + '/inqueue-utils', {
+    return deleteRecording(buildUrl('/inqueue-utils'), {
       mode: 'deleteRecordResources',
       taskSid: taskSid,
       recordingSid: recordSid,
