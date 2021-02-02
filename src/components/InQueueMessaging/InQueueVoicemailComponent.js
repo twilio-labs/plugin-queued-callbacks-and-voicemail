@@ -124,7 +124,7 @@ class InQueueVoicemailComponent extends React.Component {
         console.log('==== cbUiPlugin web service success ====');
       })
       .catch((error) => {
-        console.log('cbUiPlugin web service error' + error);
+        console.log('cbUiPlugin web service error', error);
       });
   }
 
@@ -164,7 +164,7 @@ class InQueueVoicemailComponent extends React.Component {
         //this.props.vmCallButtonDisable(false);
       })
       .catch((error) => {
-        console.log('requeue web service error' + error);
+        console.log('requeue web service error', error);
       });
   }
 

@@ -77,7 +77,7 @@ class InQueueCallbackComponent extends React.Component {
     let mgr = Flex.Manager.getInstance();
 
     console.log(buildUrl('/inqueue-utils'));
-    let temp = transferTask(buildUrl('/inqueue-utils'), {
+    transferTask(buildUrl('/inqueue-utils'), {
       mode: 'UiPlugin',
       type: 'callback',
       Token: mgr.user.token,
@@ -89,7 +89,7 @@ class InQueueCallbackComponent extends React.Component {
         console.log('==== cbUiPlugin web service success ====');
       })
       .catch(error => {
-        console.log('cbUiPlugin web service error' + error);
+        console.log('cbUiPlugin web service error', error);
       });
   }
 
@@ -145,7 +145,7 @@ class InQueueCallbackComponent extends React.Component {
     //  get instance of Flex manager
     let mgr = Flex.Manager.getInstance();
 
-    let temp = transferTask(buildUrl('/inqueue-utils'), {
+    transferTask(buildUrl('/inqueue-utils'), {
       mode: 'requeueTasks',
       type: 'callback',
       Token: mgr.user.token,
@@ -159,7 +159,7 @@ class InQueueCallbackComponent extends React.Component {
         console.log('==== requeue web service success ====');
       })
       .catch(error => {
-        console.log('requeue web service error' + error);
+        console.log('requeue web service error', error);
       });
   }
 
