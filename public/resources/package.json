@@ -7,20 +7,20 @@
     "start": "twilio-run --env"
   },
   "devDependencies": {
-    "twilio-run": "^2.0.0"
+    "twilio-run": "^2.0.0",
+    "twilio": "^3.54.2",
+    "lodash": "^4.17.11",
+    "xmldom": "^0.1.27",
+    "util": "^0.11.0",
+    "fs": "0.0.1-security"
   },
   "engines": {
     "node": "8.10.0"
   },
   "dependencies": {
-    "twilio": "^3.39.5",
-    "lodash": "^4.17.11",
-    "axios": "^0.19.2",
-    "xmldom": "^0.1.27",
-    "twilio-flex-token-validator": "^1.5.2",
+    "axios": "^0.21.1",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.28",
-    "util": "^0.11.0",
-    "fs": "0.0.1-security"
+    "twilio-flex-token-validator": "^1.5.5"
   }
 }

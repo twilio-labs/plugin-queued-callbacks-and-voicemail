@@ -8,6 +8,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 // Import the Redux Actions
 import { Actions } from '../../states/ActionInQueueMessagingState';
+//Import joinUrl functionality
+import { buildUrl } from '../../helpers/urlHelper.js';
 
 import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -74,9 +76,8 @@ class InQueueCallbackComponent extends React.Component {
     //  get instance of Flex manager
     let mgr = Flex.Manager.getInstance();
 
-    const baseUrl = process.env.REACT_APP_SERVICE_BASE_URL;
-    console.log("==========" + baseUrl);
-    let temp = transferTask(baseUrl + '/inqueue-utils', {
+    console.log(buildUrl('/inqueue-utils'));
+    transferTask(buildUrl('/inqueue-utils'), {
       mode: 'UiPlugin',
       type: 'callback',
       Token: mgr.user.token,
@@ -85,11 +86,10 @@ class InQueueCallbackComponent extends React.Component {
       state: state
     })
       .then(data => {
-    	console.log(baseUrl);
         console.log('==== cbUiPlugin web service success ====');
       })
       .catch(error => {
-        console.log('cbUiPlugin web service error');
+        console.log('cbUiPlugin web service error', error);
       });
   }
 
@@ -145,8 +145,7 @@ class InQueueCallbackComponent extends React.Component {
     //  get instance of Flex manager
     let mgr = Flex.Manager.getInstance();
 
-    const baseUrl = process.env.REACT_APP_SERVICE_BASE_URL;
-    let temp = transferTask(baseUrl + '/inqueue-utils', {
+    transferTask(buildUrl('/inqueue-utils'), {
       mode: 'requeueTasks',
       type: 'callback',
       Token: mgr.user.token,
@@ -157,12 +156,10 @@ class InQueueCallbackComponent extends React.Component {
       state: false
     })
       .then(data => {
-        console.log('========' + baseUrl);
         console.log('==== requeue web service success ====');
       })
       .catch(error => {
-        console.log('========' + baseUrl);
-        console.log('requeue web service error');
+        console.log('requeue web service error', error);
       });
   }
 
