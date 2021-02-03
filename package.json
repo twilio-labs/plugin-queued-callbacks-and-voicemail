@@ -3,18 +3,29 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "postinstall": "flex-plugin pre-script-check"
+    "postinstall": "flex-plugin pre-script-check",
+    "lint": "eslint --ext js --ext jsx src/",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run lint"
+    }
   },
   "dependencies": {
+    "flex-plugin-scripts": "4.3.19-beta.0",
+    "moment": "2.24.0",
+    "moment-timezone": "0.5.28",
     "react": "16.5.2",
     "react-dom": "16.5.2",
     "react-moment": "0.9.7",
-    "moment": "2.24.0",
-    "moment-timezone": "0.5.28",
-    "url-join": "^4.0.1",
-    "flex-plugin-scripts": "4.3.19-beta.0"
+    "url-join": "^4.0.1"
   },
   "devDependencies": {
-    "@twilio/flex-ui": "^1"
+    "@twilio/flex-ui": "^1",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.19.0",
+    "eslint-config-twilio-react": "^1.32.0",
+    "husky": "^4.3.8"
   }
 }
