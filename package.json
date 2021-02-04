@@ -1,5 +1,5 @@
 {
-  "name": "plugin-flex-inqueue-messaging",
+  "name": "plugin-queued-callbacks-and-voicemail",
   "version": "1.0.0",
   "private": true,
   "scripts": {

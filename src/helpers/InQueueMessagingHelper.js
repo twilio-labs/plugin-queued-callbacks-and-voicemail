@@ -6,7 +6,7 @@ import PhoneCallbackIcon from '@material-ui/icons/PhoneCallback';
 import InQueueCallbackComponent from '../components/InQueueMessaging/InQueueCallbackComponent';
 import InQueueVoicemailComponent from '../components/InQueueMessaging/InQueueVoicemailComponent';
 
-export function InQueueMessagingHelper(flex, manager) {
+export const InQueueMessagingHelper = (flex, manager) => {
   // Create Voicemail Channel
   const CallbackChannel = flex.DefaultTaskChannels.createDefaultTaskChannel(
     'callback',
@@ -54,4 +54,4 @@ export function InQueueMessagingHelper(flex, manager) {
     sortOrder: -1,
     if: (props) => props.task.attributes.taskType === 'voicemail',
   });
-}
+};

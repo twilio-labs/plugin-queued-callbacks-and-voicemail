@@ -42,87 +42,79 @@ class InQueueCallbackComponent extends React.Component {
 
   constructor(props) {
     super(props);
-    this.init();
+
     this.state = {};
   }
-
-  init = () => {
-    logger.debug('======= init =======');
-  };
 
   /*
    * create outbound call from Flex using Actions API 'StartOutboundCall'
    *
    */
-  cbCallButtonAccessibility(state) {
+  cbCallButtonAccessibility = async (state) => {
     const mgr = Flex.Manager.getInstance();
+    const { taskSid, attributes } = this.props.task;
     const data = {
       mode: 'UiPlugin',
       type: 'callback',
       Token: mgr.user.token,
-      taskSid: this.props.task.taskSid,
-      attributes: this.props.task.attributes,
+      taskSid,
+      attributes,
       state,
     };
 
-    http
-      .post(buildUrl('/inqueue-utils'), data)
-      .then(() => {
+    return http
+      .post(buildUrl('/inqueue-utils'), data, { noJson: true })
+      .then((resp) => {
         logger.debug('==== cbUiPlugin web service success ====');
       })
       .catch((error) => {
         logger.error('cbUiPlugin web service error', error);
       });
-  }
+  };
 
-  startCall() {
-    const mgr = Flex.Manager.getInstance();
-    const activityName = mgr.workerClient.activity.name;
+  startCall = async () => {
+    const manager = Flex.Manager.getInstance();
+    const activityName = manager.workerClient.activity.name;
     if (activityName === 'Offline') {
       // eslint-disable-next-line no-alert
       alert('Change activity state from "Offline" to place call to contact');
       return;
     }
-    //  disable the call button
-    this.cbCallButtonAccessibility(true);
+    await this.cbCallButtonAccessibility(true);
 
-    /*
-     *   disable the Place call button
-     * this.props.cbCallButtonDisable(true);
-     */
     const { queueSid, attributes } = this.props.task;
-    const { phoneTo, callerFrom } = attributes;
+    const { to, from } = attributes;
     const attr = {
       type: 'outbound',
-      name: `Contact: ${phoneTo}`,
-      phone: phoneTo,
+      name: `Contact: ${to}`,
+      phone: to,
     };
-    // place outbound call using Flex DialPad API
-    Flex.Actions.invokeAction('StartOutboundCall', {
-      destination: phoneTo,
+    await Flex.Actions.invokeAction('StartOutboundCall', {
+      destination: to,
       queueSid,
-      callerId: callerFrom,
+      callerId: from,
       taskAttributes: attr,
     });
-  }
+  };
 
-  startTransfer() {
+  startTransfer = async () => {
     // change disable state of call button
-    this.cbCallButtonAccessibility(false);
+    await this.cbCallButtonAccessibility(false);
 
     const mgr = Flex.Manager.getInstance();
+    const { taskSid, attributes, workflowSid, queueName } = this.props.task;
     const data = {
       mode: 'requeueTasks',
       type: 'callback',
       Token: mgr.user.token,
-      taskSid: this.props.task.taskSid,
-      attributes: this.props.task.attributes,
-      workflowSid: this.props.task.workflowSid,
-      queueName: this.props.task.queueName,
+      taskSid,
+      attributes,
+      workflowSid,
+      queueName,
       state: false,
     };
 
-    http
+    return http
       .post(buildUrl('/inqueue-utils'), data)
       .then(() => {
         logger.debug('==== requeue web service success ====');
@@ -130,16 +122,16 @@ class InQueueCallbackComponent extends React.Component {
       .catch((error) => {
         logger.error('requeue web service error', error);
       });
-  }
+  };
 
   render() {
-    //  determine localized call reception time based on server (props) call time
-    const timeReceived = moment(this.props.task.attributes.callTime.time_recvd);
+    const { attributes } = this.props.task;
+    const timeReceived = moment(attributes.callTime.time_recvd);
     const localTz = moment.tz.guess();
     const localTimeShort = timeReceived.tz(localTz).format('MM-D-YYYY, h:mm:ss a z');
 
     // capture taskRetry count - disable button conditionally
-    const count = this.props.task.attributes.placeCallRetry;
+    const count = attributes.placeCallRetry;
 
     return (
       <span className="Twilio">
@@ -150,7 +142,7 @@ class InQueueCallbackComponent extends React.Component {
           <li>
             <div style={styles.itemWrapper}>
               <span style={styles.item}>Contact Phone:</span>
-              <span style={styles.itemDetail}>{this.props.task.attributes.to}</span>
+              <span style={styles.itemDetail}>{attributes.to}</span>
             </div>
           </li>
           <li>&nbsp;</li>
@@ -163,14 +155,14 @@ class InQueueCallbackComponent extends React.Component {
             <div style={styles.itemWrapper}>
               <label style={styles.item}>
                 Received: &nbsp;
-                <Tooltip title="System call reception time" placement="right" arrow>
+                <Tooltip title="System call reception time" placement="right" arrow="true">
                   <Icon color="primary" fontSize="small" style={styles.info}>
                     info
                   </Icon>
                 </Tooltip>
               </label>
 
-              <label style={styles.itemDetail}>{this.props.task.attributes.callTime.server_time_short}</label>
+              <label style={styles.itemDetail}>{attributes.callTime.server_time_short}</label>
             </div>
           </li>
           <li>
@@ -178,7 +170,7 @@ class InQueueCallbackComponent extends React.Component {
               <div style={styles.itemWrapper}>
                 <div>
                   <label style={styles.item}>Localized:&nbsp;</label>
-                  <Tooltip title="Call time localized to agent" placement="right" arrow>
+                  <Tooltip title="Call time localized to agent" placement="right" arrow="true">
                     <Icon color="primary" fontSize="small" style={styles.info}>
                       info
                     </Icon>
@@ -194,20 +186,20 @@ class InQueueCallbackComponent extends React.Component {
           style={styles.cbButton}
           variant="contained"
           color="primary"
-          onClick={(e) => this.startCall()}
-          disabled={this.props.task.attributes.ui_plugin.cbCallButtonAccessibility}
+          onClick={async () => this.startCall()}
+          disabled={attributes.ui_plugin.cbCallButtonAccessibility}
         >
-          Place Call Now ( {this.props.task.attributes.to} )
+          Place Call Now ( {attributes.to} )
         </Button>
         <p style={styles.textCenter}>Not answering? Requeue to try later.</p>
         <Button
           style={styles.cbButton}
           variant="outlined"
           color="primary"
-          onClick={(e) => this.startTransfer()}
-          disabled={count >= 3}
+          onClick={async () => this.startTransfer()}
+          disabled={count >= 50}
         >
-          Requeue Callback ( {this.props.task.attributes.placeCallRetry} of 3 )
+          Requeue Callback ( {attributes.placeCallRetry} of 3 )
         </Button>
         <p>&nbsp;</p>
       </span>

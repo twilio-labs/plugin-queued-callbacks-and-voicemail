@@ -78,50 +78,48 @@ class InQueueVoicemailComponent extends React.Component {
 
   constructor(props) {
     super(props);
-    this.init();
 
     this.state = {};
   }
-
-  init = () => {
-    logger.debug('-----InQueueVoicemailComponent-------');
-  };
 
   /*
    * create outbound call from Flex using Actions API 'StartOutboundCall'
    *
    */
-  vmCallButtonAccessibility(state) {
+  vmCallButtonAccessibility = async (state) => {
     const mgr = Flex.Manager.getInstance();
+    const { attributes, taskSid } = this.props.task;
     const data = {
       mode: 'UiPlugin',
       type: 'voicemail',
       Token: mgr.user.token,
-      taskSid: this.props.task.taskSid,
-      attributes: this.props.task.attributes,
+      taskSid,
+      attributes,
       state,
     };
 
     return http
-      .post(buildUrl(inqueueUtilsUri), data)
+      .post(buildUrl(inqueueUtilsUri), data, { noJson: true })
       .then(() => {
         logger.debug('==== cbUiPlugin web service success ====');
       })
       .catch((error) => {
         logger.error('cbUiPlugin web service error', error);
       });
-  }
+  };
 
-  startTransfer() {
+  startTransfer = async () => {
     const mgr = Flex.Manager.getInstance();
+    const { attributes, taskSid, workflowSid, queueName } = this.props.task;
+
     const data = {
       mode: 'requeueTasks',
       type: 'voicemail',
       Token: mgr.user.token,
-      taskSid: this.props.task.taskSid,
-      attributes: this.props.task.attributes,
-      workflowSid: this.props.task.workflowSid,
-      queueName: this.props.task.queueName,
+      taskSid,
+      attributes,
+      workflowSid,
+      queueName,
       state: false,
     };
 
@@ -138,24 +136,23 @@ class InQueueVoicemailComponent extends React.Component {
       .catch((error) => {
         logger.error('requeue web service error', error);
       });
-  }
+  };
 
   // web service call to delete the call recording/transcript
-  deleteResources() {
+  deleteResources = async () => {
     //  get instance of Flex manager
     const mgr = Flex.Manager.getInstance();
-    const { taskSid } = this.props.task;
-    const recordSid = this.props.task.attributes.recordingSid;
-    const transcriptSid = this.props.task.attributes.transcriptionSid;
+    const { taskSid, workflowSid, queueName, attributes } = this.props.task;
+    const { recordSid, transcriptSid } = attributes;
     const data = {
       mode: 'deleteRecordResources',
       taskSid,
       recordingSid: recordSid,
       transcriptSid,
       Token: mgr.user.token,
-      attributes: this.props.task.attributes,
-      workflowSid: this.props.task.workflowSid,
-      queueName: this.props.task.queueName,
+      attributes,
+      workflowSid,
+      queueName,
     };
 
     return http
@@ -166,13 +163,9 @@ class InQueueVoicemailComponent extends React.Component {
       .catch((error) => {
         logger.error('Delete resource web service error', error);
       });
-  }
+  };
 
-  /*
-   * create outbound call from Flex using Actions API 'StartOutboundCall'
-   *
-   */
-  startCall() {
+  startCall = async () => {
     const mgr = Flex.Manager.getInstance();
     const activityName = mgr.workerClient.activity.name;
     if (activityName === 'Offline') {
@@ -181,45 +174,35 @@ class InQueueVoicemailComponent extends React.Component {
       return;
     }
 
-    this.vmCallButtonAccessibility(true);
-    // this.props.vmRecordButtonDisable(false); //  enable the Record button
-    const phoneTo = this.props.task.attributes.to;
-    const { queueSid } = this.props.task;
-    const calledFrom = this.props.task.attributes.from;
-    const attr = {
-      type: 'outbound',
-      name: `Contact: ${this.props.task.attributes.to}`,
-      phone: this.props.task.attributes.to,
-    };
+    await this.vmCallButtonAccessibility(true);
+
+    const { queueSid, attributes } = this.props.task;
+    const { to, from } = attributes;
 
     //  place outbound call using Flex DialPad API
-    Flex.Actions.invokeAction('StartOutboundCall', {
-      destination: phoneTo,
+    await Flex.Actions.invokeAction('StartOutboundCall', {
+      destination: to,
       queueSid,
-      callerId: calledFrom,
-      taskAttributes: attr,
+      callerId: from,
+      taskAttributes: {
+        type: 'outbound',
+        name: `Contact: ${to}`,
+        phone: to,
+      },
     });
-  }
+  };
 
   render() {
-    //  determine localized call reception time based on server (props) call time
-    const timeReceived = moment(this.props.task.attributes.callTime.time_recvd);
+    const { attributes } = this.props.task;
+    const timeReceived = moment(attributes.callTime.time_recvd);
     const localTz = moment.tz.guess();
     const localTimeShort = timeReceived.tz(localTz).format('MM-D-YYYY, h:mm:ss a z');
 
     // set recordingURL/transcriptionText for record deletion events
-    let transcriptText = '';
-    let recordUrl = '';
-    if (this.props.task.attributes.hasOwnProperty('markDeleted')) {
-      transcriptText = 'No call transcription captured';
-      recordUrl = '';
-    } else {
-      transcriptText = this.props.task.attributes.transcriptionText;
-      recordUrl = this.props.task.attributes.recordingUrl;
-    }
-
-    // capture taskRetry count - disable button conditionally
-    const count = this.props.task.attributes.placeCallRetry;
+    const markedDeleted = attributes.hasOwnProperty('markDeleted');
+    const transcriptText = markedDeleted ? 'No call transcription captured' : attributes.transcriptionText;
+    const recordUrl = markedDeleted ? '' : attributes.recordingUrl;
+    const count = attributes.placeCallRetry;
 
     return (
       <span className="Twilio">
@@ -250,7 +233,7 @@ class InQueueVoicemailComponent extends React.Component {
           <li>
             <div style={styles.itemWrapper}>
               <span style={styles.item}>Contact Phone:</span>
-              <span style={styles.itemDetail}>{this.props.task.attributes.to}</span>
+              <span style={styles.itemDetail}>{attributes.to}</span>
             </div>
           </li>
           <li>&nbsp;</li>
@@ -263,14 +246,14 @@ class InQueueVoicemailComponent extends React.Component {
             <div style={styles.itemWrapper}>
               <label style={styles.item}>
                 Received: &nbsp;
-                <Tooltip title="System call reception time" placement="right" arrow>
+                <Tooltip title="System call reception time" placement="right" arrow="true">
                   <Icon color="primary" fontSize="small" style={styles.info}>
                     info
                   </Icon>
                 </Tooltip>
               </label>
 
-              <label style={styles.itemDetail}>{this.props.task.attributes.callTime.server_time_short}</label>
+              <label style={styles.itemDetail}>{attributes.callTime.server_time_short}</label>
             </div>
           </li>
           <li>
@@ -278,7 +261,7 @@ class InQueueVoicemailComponent extends React.Component {
               <div style={styles.itemWrapper}>
                 <div>
                   <label style={styles.item}>Localized:&nbsp;</label>
-                  <Tooltip title="Call time localized to agent" placement="right" arrow>
+                  <Tooltip title="Call time localized to agent" placement="right" arrow="true">
                     <Icon color="primary" fontSize="small" style={styles.info}>
                       info
                     </Icon>
@@ -294,10 +277,10 @@ class InQueueVoicemailComponent extends React.Component {
           style={styles.cbButton}
           variant="contained"
           color="primary"
-          onClick={(e) => this.startCall()}
-          disabled={this.props.task.attributes.ui_plugin.vmCallButtonAccessibility}
+          onClick={async () => this.startCall()}
+          disabled={attributes.ui_plugin.vmCallButtonAccessibility}
         >
-          Call Contact Now ( {this.props.task.attributes.to} )
+          Call Contact Now ( {attributes.to} )
         </Button>
 
         <p style={styles.textCenter}>Not answering? Requeue to retry later.</p>
@@ -305,18 +288,18 @@ class InQueueVoicemailComponent extends React.Component {
           style={styles.cbButton}
           variant="outlined"
           color="primary"
-          onClick={(e) => this.startTransfer()}
+          onClick={async () => this.startTransfer()}
           disabled={count >= 3}
         >
-          Requeue Voicemail ( {this.props.task.attributes.placeCallRetry} of 3 )
+          Requeue Voicemail ( {attributes.placeCallRetry} of 3 )
         </Button>
         <p style={styles.textAlert}>Upon successful contact, delete the recording resources.</p>
         <Button
           style={styles.cbButton}
           variant="contained"
           color="secondary"
-          onClick={(e) => this.deleteResources()}
-          disabled={this.props.task.attributes.ui_plugin.vmRecordButtonAccessibility}
+          onClick={async () => this.deleteResources()}
+          disabled={attributes.ui_plugin.vmRecordButtonAccessibility}
         >
           Delete Recordings
         </Button>
