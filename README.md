@@ -51,41 +51,21 @@ git clone git@github.com:twilio-labs/plugin-queued-callbacks-and-voicemail.git
 cd plugin-queued-callbacks-and-voicemail/public && mv appConfig.example.js appConfig.js
 ```
 
-3. Open **appConfig.js** with your text editor and update the accountSid variable with your account SID:
-
-```
-var accountSid = 'ACXXXXX'
-```
-
-4. Install dependencies
+3. Install dependencies
 
 ```bash
 npm install
 ```
 
-5. [Deploy your Twilio Functions and Assets](#twilio-serverless-deployment) 
+4. [Deploy your Twilio Functions and Assets](#twilio-serverless-deployment)
 
-6. Set your environment variables
-
-```bash
-npm run setup
-```
-
-See [Twilio Account Settings](#twilio-account-settings) to locate the necessary environment variables.
-
-4. Run the application
+5. Run the application
 
 ```bash
-npm start
+twilio flex:plugins:start
 ```
 
-Alternatively, you can use this command to start the server in development mode. It will reload whenever you change any files.
-
-```bash
-npm run dev
-```
-
-5. Navigate to [http://localhost:3000](http://localhost:3000)
+6. Navigate to [http://localhost:3000](http://localhost:3000)
 
 That's it!
 
@@ -121,18 +101,16 @@ Env Variables
 Deployment Details
 Domain: plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io
 Service:
-   plugin-queued-callbacks-voicemail-functions 
+  plugin-queued-callbacks-voicemail-functions 
 Functions:
-   https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/inqueue-callback
-
-https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/inqueue-utils  
-
-https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/queue-menu
-   https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/inqueue-voicemail
+  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/inqueue-callback
+  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/inqueue-utils  
+  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/queue-menu
+  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/inqueue-voicemail
 
 Assets:
-   https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/assets/alertTone.mp3
-   https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/assets/guitar_music.mp3
+  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/assets/alertTone.mp3
+  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/assets/guitar_music.mp3
 ```
 
 Copy and save the domain returned when you deploy a function. You will need it in the next step. 
