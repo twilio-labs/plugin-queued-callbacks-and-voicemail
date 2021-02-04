@@ -12,7 +12,7 @@ The Queued Callback and Voicemail for Flex plugin helps Flex admins automate han
 
 To deploy this plugin, you will need:
 - An active Twilio account with Flex provisioned. Refer to the [Flex Quickstart](https://www.twilio.com/docs/flex/quickstart/flex-basics#sign-up-for-or-sign-in-to-twilio-and-create-a-new-flex-project) to create one.
-- npm version 5.0.0 or later installed (type `npm -v` in your terminal to check)
+- npm version 5.0.0 or 6 installed (type `npm -v` in your terminal to check)
 - Node version 10.12.0 or later installed (type `node -v` in your terminal to check)
 - [Twilio CLI](https://www.twilio.com/docs/twilio-cli/quickstart#install-twilio-cli) along with the [Flex CLI Plugin](https://www.twilio.com/docs/twilio-cli/plugins#available-plugins) and the [Serverless Plugin](https://www.twilio.com/docs/twilio-cli/plugins#available-plugins). Run the following commands to install them:
    ```
@@ -31,7 +31,6 @@ all the config values we need to run the application:
 
 | Config&nbsp;Value | Description                                                                                                                                                  |
 | :---------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Account&nbsp;Sid  | Your primary Twilio account identifier - find this [in the Console](https://www.twilio.com/console).                                                         |
 | Serverless Deployment Domain | The resulting Serverless domain name after deploying your Twilio Functions |
 | Workspace SID | Your Flex Task Assignment workspace SID - find this [in the Console TaskRouter Workspaces page](https://www.twilio.com/console/taskrouter/workspaces)
 
@@ -45,38 +44,18 @@ After the above requirements have been met:
 git clone git@github.com:twilio-labs/plugin-queued-callbacks-and-voicemail.git
 ```
 
-2. Change into the `public` subdirectory of the repo and run the following:
-
-```
-cd plugin-queued-callbacks-and-voicemail/public && mv appConfig.example.js appConfig.js
-```
-
-3. Open **appConfig.js** with your text editor and update the accountSid variable with your account SID:
-
-```
-var accountSid = 'ACXXXXX'
-```
-
-4. Install dependencies
+1. Install dependencies
 
 ```bash
 npm install
 ```
 
-5. [Deploy your Twilio Functions and Assets](#twilio-serverless-deployment) 
+1. [Deploy your Twilio Functions and Assets](#twilio-serverless-deployment) 
 
-6. Set your environment variables
-
-```bash
-npm run setup
-```
-
-See [Twilio Account Settings](#twilio-account-settings) to locate the necessary environment variables.
-
-4. Run the application
+1. Run the application
 
 ```bash
-npm start
+twilio flex:plugins:start
 ```
 
 Alternatively, you can use this command to start the server in development mode. It will reload whenever you change any files.
@@ -85,7 +64,7 @@ Alternatively, you can use this command to start the server in development mode.
 npm run dev
 ```
 
-5. Navigate to [http://localhost:3000](http://localhost:3000)
+1. Navigate to [http://localhost:3000](http://localhost:3000)
 
 That's it!
 
@@ -101,11 +80,13 @@ Step 1: From the root directory of your copy of the source code, change into `pu
 cd public/resources && mv .env.example .env
 ```
 
-Step 2: Open `.env` with your text editor and modify TWILIO_WORKSPACE_SID with your Flex Task Assignment SID.
+Step 2: Open `.env` with your text editor and modify TWILIO_WORKSPACE_SID with your Flex Task Assignment SID. See [Twilio Account Settings](#twilio-account-settings) to locate the necessary environment variables.
 
 ```
 TWILIO_WORKSPACE_SID=WSxxxxxxxxxxxxxxxxxxxxxx`
 ```
+
+Step 3: Run `npm install` to install the Serverless function dependencies.
 
 To deploy your Callback and Voicemail functions and assets, run the following:
 
