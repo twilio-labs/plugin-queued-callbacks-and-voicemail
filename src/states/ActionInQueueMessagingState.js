@@ -19,9 +19,9 @@ const ACTION_VM_RECORD_BTN_ACCESSIBILITY = 'VM_RECORD_BTN_ACCESSIBILITY';
 
 //  define the initial state values of the REDUX store
 const initialState = {
-  cbCallButtonAccessiblity: false,
-  vmCallButtonAccessiblity: false,
-  vmRecordButtonAccessiblity: true,
+  cbCallButtonAccessibility: false,
+  vmCallButtonAccessibility: false,
+  vmRecordButtonAccessibility: true,
 };
 
 //  declare the actions (methods) for acting on the reducer
@@ -55,21 +55,21 @@ export function reduce(state = initialState, action) {
       //  amend the updated store property based in updated value received
       return {
         ...state,
-        cbCallButtonAccessiblity: action.value,
+        cbCallButtonAccessibility: action.value,
       };
     }
     case ACTION_VM_CALL_BTN_ACCESSIBILITY: {
       //  amend the updated store property based in updated value received
       return {
         ...state,
-        vmCallButtonAccessiblity: action.value,
+        vmCallButtonAccessibility: action.value,
       };
     }
     case ACTION_VM_RECORD_BTN_ACCESSIBILITY: {
       //  amend the updated store property based in updated value received
       return {
         ...state,
-        vmRecordButtonAccessiblity: action.value,
+        vmRecordButtonAccessibility: action.value,
       };
     }
     default:
