@@ -2,43 +2,15 @@ import React from 'react';
 import * as Flex from '@twilio/flex-ui';
 import moment from 'moment';
 import 'moment-timezone';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import Icon from '@material-ui/core/Icon';
 
-import { buildUrl, logger, http } from '../../helpers';
-import { Actions } from '../../states/ActionInQueueMessagingState';
+import styles from './CallbackStyles';
+import { inqueueUtils } from '../common';
 
-const styles = {
-  itemWrapper: {
-    width: '100%',
-  },
-  itemBold: { fontWeight: 'bold' },
-  item: {
-    width: 100,
-  },
-  itemDetail: {
-    textAlign: 'right',
-    float: 'right',
-    marginRight: '5px',
-    marginTop: '3px',
-  },
-  cbButton: {
-    width: '100%',
-    marginBottom: '5px',
-    fontSize: '10pt',
-  },
-  textCenter: {
-    textAlign: 'center',
-    color: 'blue',
-  },
-  info: { position: 'relative', top: '3px' },
-};
-
-class InQueueCallbackComponent extends React.Component {
-  static displayName = 'InQueueCallbackComponent';
+export default class CallbackComponent extends React.Component {
+  static displayName = 'CallbackComponent';
 
   constructor(props) {
     super(props);
@@ -46,31 +18,7 @@ class InQueueCallbackComponent extends React.Component {
     this.state = {};
   }
 
-  /*
-   * create outbound call from Flex using Actions API 'StartOutboundCall'
-   *
-   */
-  cbCallButtonAccessibility = async (state) => {
-    const mgr = Flex.Manager.getInstance();
-    const { taskSid, attributes } = this.props.task;
-    const data = {
-      mode: 'UiPlugin',
-      type: 'callback',
-      Token: mgr.user.token,
-      taskSid,
-      attributes,
-      state,
-    };
-
-    return http
-      .post(buildUrl('/inqueue-utils'), data, { noJson: true })
-      .then((resp) => {
-        logger.debug('==== cbUiPlugin web service success ====');
-      })
-      .catch((error) => {
-        logger.error('cbUiPlugin web service error', error);
-      });
-  };
+  cbCallButtonAccessibility = async (state) => inqueueUtils.callButtonAccessibility(this.props.task, 'callback', state);
 
   startCall = async () => {
     const manager = Flex.Manager.getInstance();
@@ -98,30 +46,9 @@ class InQueueCallbackComponent extends React.Component {
   };
 
   startTransfer = async () => {
-    // change disable state of call button
     await this.cbCallButtonAccessibility(false);
 
-    const mgr = Flex.Manager.getInstance();
-    const { taskSid, attributes, workflowSid, queueName } = this.props.task;
-    const data = {
-      mode: 'requeueTasks',
-      type: 'callback',
-      Token: mgr.user.token,
-      taskSid,
-      attributes,
-      workflowSid,
-      queueName,
-      state: false,
-    };
-
-    return http
-      .post(buildUrl('/inqueue-utils'), data)
-      .then(() => {
-        logger.debug('==== requeue web service success ====');
-      })
-      .catch((error) => {
-        logger.error('requeue web service error', error);
-      });
+    return inqueueUtils.startTransfer(this.props.task);
   };
 
   render() {
@@ -197,7 +124,7 @@ class InQueueCallbackComponent extends React.Component {
           variant="outlined"
           color="primary"
           onClick={async () => this.startTransfer()}
-          disabled={count >= 50}
+          disabled={count >= 3}
         >
           Requeue Callback ( {attributes.placeCallRetry} of 3 )
         </Button>
@@ -206,27 +133,3 @@ class InQueueCallbackComponent extends React.Component {
     );
   }
 }
-
-/*
- * Define app property mapping to Redux store state elements
- *
- * This maps application properties to Store state element values
- *  Syntax:
- *  <app_prop_name> : state[<namespace>].<Store_Identifier>.<State_Element>
- */
-const mapStateToProps = (state) => ({
-  cbCallButtonAccessibility: state['in-queue-redux'].InQueueMessaging.cbCallButtonAccessibility,
-});
-
-/*
- *  Define mapping of local component methods to Redux Action methods for updating the store
- *
- *  Syntax:
- *  <Comp_Method> : bindActionCreators( Actions.<action_method>, dispatch)
- *
- */
-const mapDispatchToProps = (dispatch) => ({
-  cbCallButtonDisable: bindActionCreators(Actions.cbToggleCallButtonDisable, dispatch),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(InQueueCallbackComponent);
