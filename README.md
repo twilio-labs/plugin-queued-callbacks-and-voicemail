@@ -20,7 +20,7 @@ To deploy this plugin, you will need:
    npm install twilio-cli -g
    # Install the Serverless and Flex as Plugins
    twilio plugins:install @twilio-labs/plugin-serverless
-   twilio plugins:install @twilio-labs/plugin-flex@beta
+   twilio plugins:install @twilio-labs/plugin-flex
 - A GitHub account
 - [Native Dialpad configured on your Flex instance](https://www.twilio.com/docs/flex/dialpad/enable)
 
