@@ -12,6 +12,7 @@
     "moment": "2.24.0",
     "moment-timezone": "0.5.28",
     "url-join": "^4.0.1",
+    "dotenv-webpack": "^7.0.2"
     "flex-plugin-scripts": "4.3.19-beta.0"
   },
   "devDependencies": {
