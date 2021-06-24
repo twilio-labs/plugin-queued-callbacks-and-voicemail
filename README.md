@@ -13,7 +13,7 @@ The Queued Callback and Voicemail for Flex plugin helps Flex admins automate han
 To deploy this plugin, you will need:
 - An active Twilio account with Flex provisioned. Refer to the [Flex Quickstart](https://www.twilio.com/docs/flex/quickstart/flex-basics#sign-up-for-or-sign-in-to-twilio-and-create-a-new-flex-project) to create one.
 - npm version 5.0.0 or later installed (type `npm -v` in your terminal to check)
-- Node version 12.21 or later installed (type `node -v` in your terminal to check)
+- Node version 12.22.1 or later installed (type `node -v` in your terminal to check)
 - [Twilio CLI](https://www.twilio.com/docs/twilio-cli/quickstart#install-twilio-cli) along with the [Flex CLI Plugin](https://www.twilio.com/docs/twilio-cli/plugins#available-plugins) and the [Serverless Plugin](https://www.twilio.com/docs/twilio-cli/plugins#available-plugins). Run the following commands to install them:
    ```
    # Install the Twilio CLI
