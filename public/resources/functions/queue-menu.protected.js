@@ -144,15 +144,16 @@ exports.handler = async function(context, event, callback) {
         evaluateTaskAttributes: `call_sid= '${callSid}'`,
         limit: 20
       })
-      .then(async () => {
+      .then((tasks) => {
         res = {
           status: 'success',
           topic: 'getTask',
           action: 'getTask',
-          taskSid: task[0].sid,
-          taskQueueSid: task[0].taskQueueSid,
-          taskQueueName: task[0].taskQueueFriendlyName,
-          data: task[0]
+          taskSid: tasks[0].sid,
+          taskQueueSid: tasks[0].taskQueueSid,
+          taskQueueName: tasks[0].taskQueueFriendlyName,
+          workflowSid: tasks[0].workflowSid,
+          data: tasks
         };
         return res;
       })
@@ -272,9 +273,12 @@ exports.handler = async function(context, event, callback) {
     case 'main':
       async function main() {
         //  logic for retrieval of Estimated Wait Time
+        if (getEwt || getQueuePosition) {
+          let taskInfo = await getTask(event.CallSid);
+        }
+
         if (getEwt) {
-          temp = await getWorkFlow(event.CallSid);
-          temp = await getWorkflowCummStats(temp.workflowSid);
+          temp = await getWorkflowCummStats(taskInfo.workflowSid);
           //  get max, avg, min wait times for the workflow
           let t = temp.data.waitDurationUntilAccepted;
           let result = getWaitTimeResults(t, waitTime);
@@ -305,8 +309,7 @@ exports.handler = async function(context, event, callback) {
 
         //  Logic for Position in Queue
         if (getQueuePosition) {
-          temp = await getTask(event.CallSid);
-          temp = await getTaskList(event.CallSid, temp.taskQueueName);
+          temp = await getTaskList(event.CallSid, taskInfo.taskQueueName);
 
           // formatting for the position in queue
           numAhead = temp.numAhead;
