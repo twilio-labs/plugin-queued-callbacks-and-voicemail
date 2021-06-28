@@ -383,7 +383,7 @@ exports.handler = async function(context, event, callback) {
         const gather = twiml.gather({
           input: 'dtmf',
           timeout: '1',
-          action: domain + '/queue-menu?mode=menuProcess'
+          action: domain + `/queue-menu?mode=menuProcess${event.taskSid ? '&taskSid=' + event.taskSid : ''}`
         });
         gather.say(sayOptions, message);
         gather.play(domain + '/assets/guitar_music.mp3');
@@ -391,7 +391,7 @@ exports.handler = async function(context, event, callback) {
         callback(null, twiml);
       } else {
         twiml.say(sayOptions, 'I did not understand your selection.');
-        twiml.redirect(domain + '/queue-menu?mode=main&skipGreeting=true');
+        twiml.redirect(domain + `/queue-menu?mode=main&skipGreeting=true${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
         callback(null, twiml);
       }
 
@@ -403,30 +403,30 @@ exports.handler = async function(context, event, callback) {
         case '1':
           //  stay in queue
           //twiml.say(sayOptions, 'Please wait for the next available agent');
-          twiml.redirect(domain + '/queue-menu?mode=main&skipGreeting=true');
+          twiml.redirect(domain + `/queue-menu?mode=main&skipGreeting=true${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
         //  request a callback
         case '2':
-          twiml.redirect(domain + '/inqueue-callback?mode=main');
+          twiml.redirect(domain + `/inqueue-callback?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
         //  leave a voicemail
         case '3':
-          twiml.redirect(domain + '/inqueue-voicemail?mode=pre-process');
+          twiml.redirect(domain + `/inqueue-voicemail?mode=pre-process${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
 
         // listen options menu again
         case '*':
-          twiml.redirect(domain + '/queue-menu?mode=mainProcess&Digits=1');
+          twiml.redirect(domain + `/queue-menu?mode=mainProcess&Digits=1${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
 
         //  listen to menu again
         default:
           twiml.say(sayOptions, 'I did not understand your selection.');
-          twiml.redirect(domain + '/queue-menu?mode=mainProcess&Digits=1');
+          twiml.redirect(domain + `/queue-menu?mode=mainProcess&Digits=1${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
       }
