@@ -387,7 +387,7 @@ exports.handler = async function(context, event, callback) {
         });
         gather.say(sayOptions, message);
         gather.play(domain + '/assets/guitar_music.mp3');
-
+        twiml.redirect(domain + `/queue-menu?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`)
         callback(null, twiml);
       } else {
         twiml.say(sayOptions, 'I did not understand your selection.');
