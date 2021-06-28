@@ -137,23 +137,39 @@ exports.handler = async function(context, event, callback) {
       });
   }
 
-  async function getTask(callSid) {
-    return client.taskrouter
+
+  /**
+   * Get a Task Resource
+   * 
+   * @param {string} sid Call Sid or Task Sid 
+   * @returns {Promise} Promise Object with Task Resource 
+   */
+  async function getTask(sid) {
+    let fetchTask;
+    if (sid.startsWith('CA')) {
+      fetchTask = client.taskrouter
       .workspaces(context.TWILIO_WORKSPACE_SID)
       .tasks.list({
-        evaluateTaskAttributes: `call_sid= '${callSid}'`,
+        evaluateTaskAttributes: `call_sid= '${sid}'`,
         limit: 20
       })
-      .then((tasks) => {
+    } else {
+      fetchTask = client.taskrouter
+      .workspaces(context.TWILIO_WORKSPACE_SID)
+      .tasks(sid).fetch()
+    }
+    return fetchTask
+      .then((result) => {
+        let task = Array.isArray(result) ? result[0] : result;
         res = {
           status: 'success',
           topic: 'getTask',
           action: 'getTask',
-          taskSid: tasks[0].sid,
-          taskQueueSid: tasks[0].taskQueueSid,
-          taskQueueName: tasks[0].taskQueueFriendlyName,
-          workflowSid: tasks[0].workflowSid,
-          data: tasks
+          taskSid: task.sid,
+          taskQueueSid: task.taskQueueSid,
+          taskQueueName: task.taskQueueFriendlyName,
+          workflowSid: task.workflowSid,
+          data: result
         };
         return res;
       })
@@ -273,8 +289,9 @@ exports.handler = async function(context, event, callback) {
     case 'main':
       async function main() {
         //  logic for retrieval of Estimated Wait Time
+        let taskInfo
         if (getEwt || getQueuePosition) {
-          let taskInfo = await getTask(event.CallSid);
+          taskInfo = await getTask(event.taskSid || event.CallSid);
         }
 
         if (getEwt) {
@@ -333,6 +350,7 @@ exports.handler = async function(context, event, callback) {
           }
         }
 
+        let taskSid = event.taskSid ? event.taskSid : (taskInfo ? taskInfo.taskSid : undefined)
         if (event.skipGreeting !== 'true') {
           let initGreeting = waitMsg + posQueueMsg;
           initGreeting +=
@@ -344,10 +362,11 @@ exports.handler = async function(context, event, callback) {
         const gather = twiml.gather({
           input: 'dtmf',
           timeout: '2',
-          action: domain + '/queue-menu?mode=mainProcess'
+          action: domain + `/queue-menu?mode=mainProcess${taskSid ? '&taskSid=' + taskSid : ''}`
         });
         gather.say(sayOptions, message);
         gather.play(domain + '/assets/guitar_music.mp3');
+        twiml.redirect(domain + `/queue-menu?mode=main${taskSid ? '&taskSid=' + taskSid : ''}`);
         callback(null, twiml);
       }
       main();
