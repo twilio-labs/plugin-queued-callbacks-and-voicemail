@@ -56,23 +56,26 @@ exports.handler = function (context, event, callback) {
   //   }
   // }
 
-  //  find the task given the callSid - get TaskSid
-  async function getTask(callSid) {
+  //  find the task given the callSid or the task Sid - get TaskSid
+  async function getTask(sid) {
     try {
-      attrFilter = `call_sid= '${callSid}'`;
-      let task = await client.taskrouter
-        .workspaces(context.TWILIO_WORKSPACE_SID)
-        .tasks.list({
-          evaluateTaskAttributes: attrFilter,
-          limit: 20,
-        });
-      let taskInfo = {
-        originalTaskData: task[0],
-      };
+      let result = await (sid.startsWith('CA') 
+      ? client.taskrouter
+      .workspaces(context.TWILIO_WORKSPACE_SID)
+      .tasks.list({
+        evaluateTaskAttributes: `call_sid= '${sid}'`,
+        limit: 20
+      }) 
+      : fetchTask = client.taskrouter
+      .workspaces(context.TWILIO_WORKSPACE_SID)
+      .tasks(sid).fetch())
 
+      let taskInfo = {
+        originalTaskData: Array.isArray(result) ? result[0] : result,
+      };
       return taskInfo;
     } catch (error) {
-      console.log('getTask Error');
+      console.log('getTask error');
       handleError(error);
     }
   }
@@ -161,7 +164,7 @@ exports.handler = function (context, event, callback) {
   }
 
   async function callModify(sid) {
-    let redirect = domain + '/inqueue-voicemail?mode=main';
+    let redirect = domain + `/inqueue-voicemail?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`;
 
     try {
       await client
@@ -214,11 +217,14 @@ exports.handler = function (context, event, callback) {
         //  modify the call - redirect it to the Main Voicemail method (mode=main)
         let modCall = await callModify(callSid);
 
+        let taskSid = event.taskSid; 
         //  get taskSid based on callSid
-        let taskInfo = await getTask(callSid);
+        if (!taskSid) {
+          let taskInfo = await getTask(callSid);
+          taskSid = getOrigTaskData(taskInfo.originalTaskData, 'sid', '');
+        }
 
         //  cancel (update) the task given taskSid
-        let taskSid = getOrigTaskData(taskInfo.originalTaskData, 'sid', '');
         let taskUpdate = await cancelTask(taskSid);
 
         callback(null, '');
@@ -293,7 +299,7 @@ exports.handler = function (context, event, callback) {
 
         callSid = event.callsid;
         console.log(callSid);
-        let taskInfo = await getTask(callSid);
+        let taskInfo = await getTask(event.taskSid || callSid);
 
         //  create the Voicemail task
         let vmTask = await createVoicemail(result, taskInfo);
