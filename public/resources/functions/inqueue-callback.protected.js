@@ -63,10 +63,6 @@ exports.handler = function (context, event, callback) {
 
   //  find the task given the callSid or the task sid - get TaskSid
   async function getTask(sid) {
-
-    if (sid.startsWith('CA')) {
-      console.log('inqueue-callback:getTask called with Call Sid')
-    }
     try {
       let result = await (sid.startsWith('CA') 
       ? client.taskrouter
