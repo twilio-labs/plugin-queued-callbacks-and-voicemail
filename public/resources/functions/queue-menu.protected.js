@@ -115,7 +115,7 @@ exports.handler = async function(context, event, callback) {
    * @param {string} sid Call Sid or Task Sid 
    * @returns {Promise} Promise Object with Task Resource 
    */
-  async function getTask(sid) {
+  function getTask(sid) {
     let fetchTask;
     if (sid.startsWith('CA')) {
       fetchTask = client.taskrouter
