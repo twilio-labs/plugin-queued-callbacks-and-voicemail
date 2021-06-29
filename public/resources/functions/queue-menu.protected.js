@@ -80,35 +80,6 @@ exports.handler = async function(context, event, callback) {
     }
   }
 
-  //  retrieve workflow SID give CallSid using the TaskRouter API
-  async function getWorkFlow(callSid) {
-    return client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks.list({
-        evaluateTaskAttributes: `call_sid= '${callSid}'`,
-        limit: 20
-      })
-      .then(tasks => {
-        res = {
-          status: 'success',
-          topic: 'getWorkFlow',
-          action: 'getWorkFlow',
-          workflowSid: tasks[0].workflowSid,
-          data: tasks
-        };
-        return res;
-      })
-      .catch(error => {
-        res = {
-          status: 'error',
-          topic: 'getWorkFlow',
-          action: 'getWorkFlow',
-          data: error
-        };
-        return res;
-      });
-  }
-
   //  retrieve workflow cummulative statistics for Estimated wait time
   async function getWorkflowCummStats(workflowSid) {
     return client.taskrouter
