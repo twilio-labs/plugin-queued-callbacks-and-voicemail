@@ -356,7 +356,7 @@ exports.handler = function (context, event, callback) {
       async function main() {
         //  get taskSid based on callSid
         //  taskInfo = { "sid" : <taskSid>, "queueTargetName" : <taskQueueName>, "queueTargetSid" : <taskQueueSid> };
-        let taskInfo = await getTask(event.taskSid || event.callsid);
+        const taskInfo = await getTask(event.taskSid || event.callsid);
 
         //  cancel (update) the task given taskSid
         let taskSid = event.taskSid || getOrigTaskData(taskInfo.originalTaskData, 'sid', '');
