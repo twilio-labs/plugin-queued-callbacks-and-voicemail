@@ -64,21 +64,25 @@ exports.handler = function (context, event, callback) {
   //  find the task given the callSid or the task sid - get TaskSid
   async function getTask(sid) {
     try {
-      let result = await (sid.startsWith('CA') 
-      ? client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks.list({
-        evaluateTaskAttributes: `call_sid= '${sid}'`,
-        limit: 20
-      }) 
-      : fetchTask = client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks(sid).fetch())
-
-      let taskInfo = {
-        originalTaskData: Array.isArray(result) ? result[0] : result,
+      if (sid.startsWith('CA')) {
+        const result = await client.taskrouter
+          .workspaces(context.TWILIO_WORKSPACE_SID)
+          .tasks.list({
+            evaluateTaskAttributes: `call_sid= '${sid}'`,
+            limit: 20
+          });
+        return {
+          originalTaskData: result[0],
+        };
+      }
+      
+      const result = await client.taskrouter
+        .workspaces(context.TWILIO_WORKSPACE_SID)
+        .tasks(sid)
+        .fetch();
+      return {
+        originalTaskData: result,
       };
-      return taskInfo;
     } catch (error) {
       console.log('getTask error');
       handleError(error);
@@ -357,6 +361,8 @@ exports.handler = function (context, event, callback) {
         //  get taskSid based on callSid
         //  taskInfo = { "sid" : <taskSid>, "queueTargetName" : <taskQueueName>, "queueTargetSid" : <taskQueueSid> };
         const taskInfo = await getTask(event.taskSid || event.callsid);
+        console.log(taskInfo)
+        console.log(event.taskSid)
 
         //  cancel (update) the task given taskSid
         let taskSid = event.taskSid || getOrigTaskData(taskInfo.originalTaskData, 'sid', '');
@@ -366,7 +372,7 @@ exports.handler = function (context, event, callback) {
         let cbTask = await createCallback('+' + event.cbphone, taskInfo);
 
         //  hangup the call
-        twiml.say(sayOptions, 'Your callback has been delivered...');
+        twiml.say(sayOptions, 'Your callback request has been delivered...');
         twiml.say(
           sayOptions,
           'An available care specialist will reach out to contact you...'

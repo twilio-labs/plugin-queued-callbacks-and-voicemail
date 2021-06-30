@@ -59,21 +59,25 @@ exports.handler = function (context, event, callback) {
   //  find the task given the callSid or the task Sid - get TaskSid
   async function getTask(sid) {
     try {
-      let result = await (sid.startsWith('CA') 
-      ? client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks.list({
-        evaluateTaskAttributes: `call_sid= '${sid}'`,
-        limit: 20
-      }) 
-      : fetchTask = client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks(sid).fetch())
-
-      let taskInfo = {
-        originalTaskData: Array.isArray(result) ? result[0] : result,
+      if (sid.startsWith('CA')) {
+        const result = await client.taskrouter
+          .workspaces(context.TWILIO_WORKSPACE_SID)
+          .tasks.list({
+            evaluateTaskAttributes: `call_sid= '${sid}'`,
+            limit: 20
+          });
+        return {
+          originalTaskData: result[0],
+        };
+      }
+      
+      const result = await client.taskrouter
+        .workspaces(context.TWILIO_WORKSPACE_SID)
+        .tasks(sid)
+        .fetch();
+      return {
+        originalTaskData: result,
       };
-      return taskInfo;
     } catch (error) {
       console.log('getTask error');
       handleError(error);
