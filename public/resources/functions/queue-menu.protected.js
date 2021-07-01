@@ -27,22 +27,18 @@ const moment = require('moment');
 exports.handler = async function (context, event, callback) {
   const helpersPath = Runtime.getFunctions()['helpers'].path;
   const { getTask } = require(helpersPath);
+  const optionsPath = Runtime.getFunctions()['options'].path;
+  const options = require(optionsPath);
+
   const client = context.getTwilioClient();
   const domain = 'https://' + context.DOMAIN_NAME;
   let twiml = new Twilio.twiml.VoiceResponse();
 
-  //    CUSTOMIZATIONS
-  const sayOptions = { voice: 'Polly.Joanna' };
-  const holdMusicUrl = '/assets/guitar_music.mp3';
+  // Retrieve options
+  const { sayOptions, holdMusicUrl, statPeriod, getEwt, getQueuePosition } =
+    options;
 
-  const statPeriod = 5; //  time interval (minutes) to gather cummulative statistics
-
-  const getEwt = true;
-  const getQueuePosition = true;
-
-  //    END CUSTOMIZATIONS
-
-  //  variable initialization
+  // Variables initialization
   let mode = event.mode;
   let message = '';
 
