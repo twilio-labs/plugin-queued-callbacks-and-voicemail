@@ -25,6 +25,8 @@
 const axios = require('axios');
 const moment = require('moment');
 exports.handler = async function (context, event, callback) {
+  const helpersPath = Runtime.getFunctions()['helpers'].path;
+  const { getTask } = require(helpersPath);
   const client = context.getTwilioClient();
   const domain = 'https://' + context.DOMAIN_NAME;
   let twiml = new Twilio.twiml.VoiceResponse();
@@ -105,53 +107,6 @@ exports.handler = async function (context, event, callback) {
           action: 'getWorkflowCummStats',
           data: error,
         };
-      });
-  }
-
-  /**
-   * Get a Task Resource
-   *
-   * @param {string} sid Call Sid or Task Sid
-   * @returns {Promise} Promise Object with Task Resource
-   */
-  function getTask(sid) {
-    let fetchTask;
-    if (sid.startsWith('CA')) {
-      fetchTask = client.taskrouter
-        .workspaces(context.TWILIO_WORKSPACE_SID)
-        .tasks.list({
-          evaluateTaskAttributes: `call_sid= '${sid}'`,
-          limit: 20,
-        });
-    } else {
-      fetchTask = client.taskrouter
-        .workspaces(context.TWILIO_WORKSPACE_SID)
-        .tasks(sid)
-        .fetch();
-    }
-    return fetchTask
-      .then((result) => {
-        let task = Array.isArray(result) ? result[0] : result;
-        res = {
-          status: 'success',
-          topic: 'getTask',
-          action: 'getTask',
-          taskSid: task.sid,
-          taskQueueSid: task.taskQueueSid,
-          taskQueueName: task.taskQueueFriendlyName,
-          workflowSid: task.workflowSid,
-          data: result,
-        };
-        return res;
-      })
-      .catch((error) => {
-        res = {
-          status: 'error',
-          topic: 'getTask',
-          action: 'getTask',
-          data: error,
-        };
-        return res;
       });
   }
 
@@ -262,7 +217,7 @@ exports.handler = async function (context, event, callback) {
         //  logic for retrieval of Estimated Wait Time
         let taskInfo;
         if (getEwt || getQueuePosition) {
-          taskInfo = await getTask(event.taskSid || event.CallSid);
+          taskInfo = await getTask(context, event.taskSid || event.CallSid);
         }
 
         if (getEwt) {
