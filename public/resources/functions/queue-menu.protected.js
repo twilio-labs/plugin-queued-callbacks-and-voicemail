@@ -24,6 +24,7 @@
 */
 const axios = require('axios');
 const moment = require('moment');
+
 exports.handler = async function (context, event, callback) {
   const helpersPath = Runtime.getFunctions()['helpers'].path;
   const { getTask } = require(helpersPath);
@@ -42,7 +43,7 @@ exports.handler = async function (context, event, callback) {
   let mode = event.mode;
   let message = '';
 
-  // vars for EWT/PostionInQueue
+  // Variables for EWT/PostionInQueue
   let temp = {};
   let res = {};
 
@@ -295,7 +296,7 @@ exports.handler = async function (context, event, callback) {
             }`,
         });
         gather.say(sayOptions, message);
-        gather.play(domain + '/assets/guitar_music.mp3');
+        gather.play(domain + holdMusicUrl);
         twiml.redirect(
           domain +
             `/queue-menu?mode=main${taskSid ? '&taskSid=' + taskSid : ''}`
@@ -323,7 +324,7 @@ exports.handler = async function (context, event, callback) {
             }`,
         });
         gather.say(sayOptions, message);
-        gather.play(domain + '/assets/guitar_music.mp3');
+        gather.play(domain + holdMusicUrl);
         twiml.redirect(
           domain +
             `/queue-menu?mode=main${
