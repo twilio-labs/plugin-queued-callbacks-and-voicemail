@@ -48,14 +48,13 @@ exports.handler = JWEValidator(async function (context, event, callback) {
       );
     } catch (error) {
       console.log('devTesting error');
-      handleError(error)
+      handleError(error);
     }
   }
 
   //    global function to update callback Task attributes
   //    controlling the UI call button view
   async function PluginTaskUpdate(type, taskSid, attr, state) {
-
     if (type == 'callback') {
       attr.ui_plugin.cbCallButtonAccessibility = event.state;
     }

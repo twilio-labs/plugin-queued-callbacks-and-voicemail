@@ -24,7 +24,7 @@
 */
 const axios = require('axios');
 const moment = require('moment');
-exports.handler = async function(context, event, callback) {
+exports.handler = async function (context, event, callback) {
   const client = context.getTwilioClient();
   const domain = 'https://' + context.DOMAIN_NAME;
   let twiml = new Twilio.twiml.VoiceResponse();
@@ -71,7 +71,7 @@ exports.handler = async function(context, event, callback) {
         'https://webhook.site/7c341c7f-08cf-4308-b006-e2cd30cdfffe',
         {
           desc: desc,
-          item: item
+          item: item,
         }
       );
     } catch (error) {
@@ -86,48 +86,48 @@ exports.handler = async function(context, event, callback) {
       .workspaces(context.TWILIO_WORKSPACE_SID)
       .workflows(workflowSid)
       .cumulativeStatistics({
-        Minutes: statPeriod
+        Minutes: statPeriod,
       })
       .fetch()
-      .then(workflow_statistics => {
+      .then((workflow_statistics) => {
         res = {
           status: 'success',
           topic: 'getWorkflowCummStats',
           action: 'getWorkflowCummStats',
-          data: workflow_statistics
+          data: workflow_statistics,
         };
         return res;
       })
-      .catch(error => {
+      .catch((error) => {
         res = {
           status: 'error',
           topic: 'getWorkflowCummStats',
           action: 'getWorkflowCummStats',
-          data: error
+          data: error,
         };
       });
   }
 
-
   /**
    * Get a Task Resource
-   * 
-   * @param {string} sid Call Sid or Task Sid 
-   * @returns {Promise} Promise Object with Task Resource 
+   *
+   * @param {string} sid Call Sid or Task Sid
+   * @returns {Promise} Promise Object with Task Resource
    */
   function getTask(sid) {
     let fetchTask;
     if (sid.startsWith('CA')) {
       fetchTask = client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks.list({
-        evaluateTaskAttributes: `call_sid= '${sid}'`,
-        limit: 20
-      })
+        .workspaces(context.TWILIO_WORKSPACE_SID)
+        .tasks.list({
+          evaluateTaskAttributes: `call_sid= '${sid}'`,
+          limit: 20,
+        });
     } else {
       fetchTask = client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks(sid).fetch()
+        .workspaces(context.TWILIO_WORKSPACE_SID)
+        .tasks(sid)
+        .fetch();
     }
     return fetchTask
       .then((result) => {
@@ -140,16 +140,16 @@ exports.handler = async function(context, event, callback) {
           taskQueueSid: task.taskQueueSid,
           taskQueueName: task.taskQueueFriendlyName,
           workflowSid: task.workflowSid,
-          data: result
+          data: result,
         };
         return res;
       })
-      .catch(error => {
+      .catch((error) => {
         res = {
           status: 'error',
           topic: 'getTask',
           action: 'getTask',
-          data: error
+          data: error,
         };
         return res;
       });
@@ -162,9 +162,9 @@ exports.handler = async function(context, event, callback) {
         assignmentStatus: 'pending, reserved',
         taskQueueName: taskQueueName,
         ordering: 'DateCreated:asc,Priority:desc',
-        limit: 20
+        limit: 20,
       })
-      .then(async tasks => {
+      .then(async (tasks) => {
         let totTasks = tasks.length;
         for (i = 0; i < tasks.length; i++) {
           attr = JSON.parse(tasks[i].attributes);
@@ -177,14 +177,14 @@ exports.handler = async function(context, event, callback) {
             taskQueueName: tasks[i].taskQueueFriendlyName,
             taskChannelName: tasks[i].taskChannelUniqueName,
             dateCreated: tasks[i].dateCreated,
-            dateEnteredQueue: tasks[i].taskQueueEnteredDate
+            dateEnteredQueue: tasks[i].taskQueueEnteredDate,
           };
           taskList.push(temp);
         }
 
         // find position in Queue
         var position = 0;
-        position = taskList.findIndex(function(task) {
+        position = taskList.findIndex(function (task) {
           return task.callSid == callSid;
         });
 
@@ -199,7 +199,7 @@ exports.handler = async function(context, event, callback) {
             position: -1,
             totTasks: totTasks,
             numAhead: -1,
-            data: taskList
+            data: taskList,
           };
         } else {
           //  task found in list
@@ -212,17 +212,17 @@ exports.handler = async function(context, event, callback) {
             position: position,
             totTasks: totTasks,
             numAhead: numAhead,
-            data: taskList
+            data: taskList,
           };
         }
         return res;
       })
-      .catch(error => {
+      .catch((error) => {
         res = {
           status: 'error',
           topic: 'getTaskList',
           action: 'getTaskList',
-          data: error
+          data: error,
         };
         return res;
       });
@@ -235,7 +235,7 @@ exports.handler = async function(context, event, callback) {
       type: type,
       hours: duration._data.hours,
       minutes: duration._data.minutes,
-      seconds: duration._data.seconds
+      seconds: duration._data.seconds,
     };
     waitTime.push(res);
     return waitTime;
@@ -248,7 +248,7 @@ exports.handler = async function(context, event, callback) {
     waitTimeCalc('minWaitTime', t.min, waitTime);
 
     // get average wait time
-    temp = waitTime.filter(item => item.type == 'avgWaitTime');
+    temp = waitTime.filter((item) => item.type == 'avgWaitTime');
 
     return temp;
   }
@@ -260,7 +260,7 @@ exports.handler = async function(context, event, callback) {
     case 'main':
       async function main() {
         //  logic for retrieval of Estimated Wait Time
-        let taskInfo
+        let taskInfo;
         if (getEwt || getQueuePosition) {
           taskInfo = await getTask(event.taskSid || event.CallSid);
         }
@@ -321,7 +321,11 @@ exports.handler = async function(context, event, callback) {
           }
         }
 
-        let taskSid = event.taskSid ? event.taskSid : (taskInfo ? taskInfo.taskSid : undefined)
+        let taskSid = event.taskSid
+          ? event.taskSid
+          : taskInfo
+          ? taskInfo.taskSid
+          : undefined;
         if (event.skipGreeting !== 'true') {
           let initGreeting = waitMsg + posQueueMsg;
           initGreeting +=
@@ -333,11 +337,18 @@ exports.handler = async function(context, event, callback) {
         const gather = twiml.gather({
           input: 'dtmf',
           timeout: '2',
-          action: domain + `/queue-menu?mode=mainProcess${taskSid ? '&taskSid=' + taskSid : ''}`
+          action:
+            domain +
+            `/queue-menu?mode=mainProcess${
+              taskSid ? '&taskSid=' + taskSid : ''
+            }`,
         });
         gather.say(sayOptions, message);
         gather.play(domain + '/assets/guitar_music.mp3');
-        twiml.redirect(domain + `/queue-menu?mode=main${taskSid ? '&taskSid=' + taskSid : ''}`);
+        twiml.redirect(
+          domain +
+            `/queue-menu?mode=main${taskSid ? '&taskSid=' + taskSid : ''}`
+        );
         callback(null, twiml);
       }
       main();
@@ -354,15 +365,29 @@ exports.handler = async function(context, event, callback) {
         const gather = twiml.gather({
           input: 'dtmf',
           timeout: '1',
-          action: domain + `/queue-menu?mode=menuProcess${event.taskSid ? '&taskSid=' + event.taskSid : ''}`
+          action:
+            domain +
+            `/queue-menu?mode=menuProcess${
+              event.taskSid ? '&taskSid=' + event.taskSid : ''
+            }`,
         });
         gather.say(sayOptions, message);
         gather.play(domain + '/assets/guitar_music.mp3');
-        twiml.redirect(domain + `/queue-menu?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`)
+        twiml.redirect(
+          domain +
+            `/queue-menu?mode=main${
+              event.taskSid ? '&taskSid=' + event.taskSid : ''
+            }`
+        );
         callback(null, twiml);
       } else {
         twiml.say(sayOptions, 'I did not understand your selection.');
-        twiml.redirect(domain + `/queue-menu?mode=main&skipGreeting=true${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+        twiml.redirect(
+          domain +
+            `/queue-menu?mode=main&skipGreeting=true${
+              event.taskSid ? '&taskSid=' + event.taskSid : ''
+            }`
+        );
         callback(null, twiml);
       }
 
@@ -374,30 +399,55 @@ exports.handler = async function(context, event, callback) {
         case '1':
           //  stay in queue
           //twiml.say(sayOptions, 'Please wait for the next available agent');
-          twiml.redirect(domain + `/queue-menu?mode=main&skipGreeting=true${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+          twiml.redirect(
+            domain +
+              `/queue-menu?mode=main&skipGreeting=true${
+                event.taskSid ? '&taskSid=' + event.taskSid : ''
+              }`
+          );
           callback(null, twiml);
           break;
         //  request a callback
         case '2':
-          twiml.redirect(domain + `/inqueue-callback?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+          twiml.redirect(
+            domain +
+              `/inqueue-callback?mode=main${
+                event.taskSid ? '&taskSid=' + event.taskSid : ''
+              }`
+          );
           callback(null, twiml);
           break;
         //  leave a voicemail
         case '3':
-          twiml.redirect(domain + `/inqueue-voicemail?mode=pre-process${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+          twiml.redirect(
+            domain +
+              `/inqueue-voicemail?mode=pre-process${
+                event.taskSid ? '&taskSid=' + event.taskSid : ''
+              }`
+          );
           callback(null, twiml);
           break;
 
         // listen options menu again
         case '*':
-          twiml.redirect(domain + `/queue-menu?mode=mainProcess&Digits=1${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+          twiml.redirect(
+            domain +
+              `/queue-menu?mode=mainProcess&Digits=1${
+                event.taskSid ? '&taskSid=' + event.taskSid : ''
+              }`
+          );
           callback(null, twiml);
           break;
 
         //  listen to menu again
         default:
           twiml.say(sayOptions, 'I did not understand your selection.');
-          twiml.redirect(domain + `/queue-menu?mode=mainProcess&Digits=1${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+          twiml.redirect(
+            domain +
+              `/queue-menu?mode=mainProcess&Digits=1${
+                event.taskSid ? '&taskSid=' + event.taskSid : ''
+              }`
+          );
           callback(null, twiml);
           break;
       }
