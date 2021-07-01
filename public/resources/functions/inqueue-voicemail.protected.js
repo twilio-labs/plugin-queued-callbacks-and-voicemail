@@ -64,13 +64,13 @@ exports.handler = function (context, event, callback) {
           .workspaces(context.TWILIO_WORKSPACE_SID)
           .tasks.list({
             evaluateTaskAttributes: `call_sid= '${sid}'`,
-            limit: 20
+            limit: 20,
           });
         return {
           originalTaskData: result[0],
         };
       }
-      
+
       const result = await client.taskrouter
         .workspaces(context.TWILIO_WORKSPACE_SID)
         .tasks(sid)
@@ -168,12 +168,14 @@ exports.handler = function (context, event, callback) {
   }
 
   async function callModify(sid) {
-    let redirect = domain + `/inqueue-voicemail?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`;
+    let redirect =
+      domain +
+      `/inqueue-voicemail?mode=main${
+        event.taskSid ? '&taskSid=' + event.taskSid : ''
+      }`;
 
     try {
-      await client
-        .calls(sid)
-        .update({ method: 'POST', url: redirect });
+      await client.calls(sid).update({ method: 'POST', url: redirect });
     } catch (error) {
       console.log('callModify Error');
       handleError(error);
@@ -221,7 +223,7 @@ exports.handler = function (context, event, callback) {
         //  modify the call - redirect it to the Main Voicemail method (mode=main)
         let modCall = await callModify(callSid);
 
-        let taskSid = event.taskSid; 
+        let taskSid = event.taskSid;
         //  get taskSid based on callSid
         if (!taskSid) {
           let taskInfo = await getTask(callSid);

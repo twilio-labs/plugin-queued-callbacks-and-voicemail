@@ -69,13 +69,13 @@ exports.handler = function (context, event, callback) {
           .workspaces(context.TWILIO_WORKSPACE_SID)
           .tasks.list({
             evaluateTaskAttributes: `call_sid= '${sid}'`,
-            limit: 20
+            limit: 20,
           });
         return {
           originalTaskData: result[0],
         };
       }
-      
+
       const result = await client.taskrouter
         .workspaces(context.TWILIO_WORKSPACE_SID)
         .tasks(sid)
@@ -252,8 +252,8 @@ exports.handler = function (context, event, callback) {
               '/inqueue-callback?mode=submitCallback&callsid=' +
               callSid +
               '&cbphone=' +
-              temp + 
-              (event.taskSid ? '&taskSid=' + event.taskSid : ''),
+              temp +
+              (event.taskSid ? '&taskSid=' + event.taskSid : '')
           );
           callback(null, twiml);
           break;
@@ -267,16 +267,28 @@ exports.handler = function (context, event, callback) {
             timeout: '10',
             finishOnKey: '#',
             action:
-              domain + '/inqueue-callback?mode=newNumber&callsid=' + callSid +
+              domain +
+              '/inqueue-callback?mode=newNumber&callsid=' +
+              callSid +
               (event.taskSid ? '&taskSid=' + event.taskSid : ''),
           });
           gather_2.say(sayOptions, message);
-          twiml.redirect(domain + `/inqueue-callback?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+          twiml.redirect(
+            domain +
+              `/inqueue-callback?mode=main${
+                event.taskSid ? '&taskSid=' + event.taskSid : ''
+              }`
+          );
           callback(null, twiml);
           break;
         default:
           twiml.say(sayOptions, 'I did not understand your selection.');
-          twiml.redirect(domain + `/inqueue-callback?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+          twiml.redirect(
+            domain +
+              `/inqueue-callback?mode=main${
+                event.taskSid ? '&taskSid=' + event.taskSid : ''
+              }`
+          );
           callback(null, twiml);
           break;
       }
@@ -305,7 +317,12 @@ exports.handler = function (context, event, callback) {
           (event.taskSid ? '&taskSid=' + event.taskSid : ''),
       });
       gather_3.say(sayOptions, message);
-      twiml.redirect(domain + `/inqueue-callback?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+      twiml.redirect(
+        domain +
+          `/inqueue-callback?mode=main${
+            event.taskSid ? '&taskSid=' + event.taskSid : ''
+          }`
+      );
       callback(null, twiml);
       break;
 
@@ -324,7 +341,7 @@ exports.handler = function (context, event, callback) {
               callSid +
               '&cbphone=' +
               temp +
-              (event.taskSid ? '&taskSid=' + event.taskSid : ''),
+              (event.taskSid ? '&taskSid=' + event.taskSid : '')
           );
           callback(null, twiml);
           break;
@@ -335,13 +352,18 @@ exports.handler = function (context, event, callback) {
               '/inqueue-callback?mode=mainProcess&callsid=' +
               callSid +
               '&Digits=2' +
-              (event.taskSid ? '&taskSid=' + event.taskSid : ''),
+              (event.taskSid ? '&taskSid=' + event.taskSid : '')
           );
           callback(null, twiml);
           break;
         //  redirect to main menu
         case '*':
-          twiml.redirect(domain + `/queue-menu?mode=main&skipGreeting=true${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
+          twiml.redirect(
+            domain +
+              `/queue-menu?mode=main&skipGreeting=true${
+                event.taskSid ? '&taskSid=' + event.taskSid : ''
+              }`
+          );
           callback(null, twiml);
           break;
       }
@@ -361,11 +383,13 @@ exports.handler = function (context, event, callback) {
         //  get taskSid based on callSid
         //  taskInfo = { "sid" : <taskSid>, "queueTargetName" : <taskQueueName>, "queueTargetSid" : <taskQueueSid> };
         const taskInfo = await getTask(event.taskSid || event.callsid);
-        console.log(taskInfo)
-        console.log(event.taskSid)
+        console.log(taskInfo);
+        console.log(event.taskSid);
 
         //  cancel (update) the task given taskSid
-        let taskSid = event.taskSid || getOrigTaskData(taskInfo.originalTaskData, 'sid', '');
+        let taskSid =
+          event.taskSid ||
+          getOrigTaskData(taskInfo.originalTaskData, 'sid', '');
         let taskUpdate = await cancelTask(taskSid);
 
         //  create the callback task
