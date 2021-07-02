@@ -25,6 +25,79 @@
 const axios = require('axios');
 const moment = require('moment');
 
+//  retrieve workflow cummulative statistics for Estimated wait time
+async function getWorkflowCummStats(
+  client,
+  workspaceSid,
+  workflowSid,
+  statPeriod
+) {
+  return client.taskrouter
+    .workspaces(workspaceSid)
+    .workflows(workflowSid)
+    .cumulativeStatistics({
+      Minutes: statPeriod,
+    })
+    .fetch()
+    .then((workflow_statistics) => {
+      return {
+        status: 'success',
+        topic: 'getWorkflowCummStats',
+        action: 'getWorkflowCummStats',
+        data: workflow_statistics,
+      };
+    })
+    .catch((error) => {
+      return {
+        status: 'error',
+        topic: 'getWorkflowCummStats',
+        action: 'getWorkflowCummStats',
+        data: error,
+      };
+    });
+}
+
+async function getTaskPositionInQueue(client, taskInfo) {
+  return await client.taskrouter
+    .workspaces(taskInfo.workspaceSid)
+    .tasks.list({
+      assignmentStatus: 'pending, reserved',
+      taskQueueName: taskInfo.taskQueueName,
+      ordering: 'DateCreated:asc,Priority:desc',
+      limit: 20,
+    })
+    .then((taskList) => {
+      let taskPosition = taskList.findIndex(
+        (task) => task.sid === taskInfo.taskSid
+      );
+      return {
+        status: 'success',
+        topic: 'getTaskList',
+        action: 'getTaskList',
+        position: taskPosition,
+        data: taskList,
+      };
+    })
+    .catch((error) => {
+      return {
+        status: 'error',
+        topic: 'getTaskList',
+        action: 'getTaskList',
+        data: error,
+      };
+    });
+}
+
+function getAverageWaitTime(t) {
+  let durationInSeconds = moment.duration(t.avg, 'seconds');
+  return {
+    type: 'avgWaitTime',
+    hours: durationInSeconds._data.hours,
+    minutes: durationInSeconds._data.minutes,
+    seconds: durationInSeconds._data.seconds,
+  };
+}
+
 exports.handler = async function (context, event, callback) {
   const helpersPath = Runtime.getFunctions()['helpers'].path;
   const { getTask } = require(helpersPath);
@@ -39,172 +112,17 @@ exports.handler = async function (context, event, callback) {
   const { sayOptions, holdMusicUrl, statPeriod, getEwt, getQueuePosition } =
     options;
 
+  // Retrieve event arguments
+  const CallSid = event.CallSid || '';
+  let taskSid = event.taskSid;
+
   // Variables initialization
   let mode = event.mode;
   let message = '';
 
   // Variables for EWT/PostionInQueue
-  let temp = {};
-  let res = {};
-
-  let callSid = '';
-  let workflowSid = '';
-  let waitTts = '';
   let waitMsg = '';
   let posQueueMsg = '';
-
-  let avgWaitTime = 0;
-  let maxWaitTime = 0;
-  let minWaitTime = 0;
-
-  let waitTime = [];
-  let taskList = [];
-  let attr = {};
-
-  // BEGIN: Supporting functions for Estimated Wait Time and Position in Queue
-
-  //  DEBUGGING ONLY - REMOVE FROM PROD CODE
-  async function devTesting(desc, item) {
-    try {
-      await axios.post(
-        'https://webhook.site/7c341c7f-08cf-4308-b006-e2cd30cdfffe',
-        {
-          desc: desc,
-          item: item,
-        }
-      );
-    } catch (error) {
-      console.log('devTesting error');
-      handleError(error);
-    }
-  }
-
-  //  retrieve workflow cummulative statistics for Estimated wait time
-  async function getWorkflowCummStats(workflowSid) {
-    return client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .workflows(workflowSid)
-      .cumulativeStatistics({
-        Minutes: statPeriod,
-      })
-      .fetch()
-      .then((workflow_statistics) => {
-        res = {
-          status: 'success',
-          topic: 'getWorkflowCummStats',
-          action: 'getWorkflowCummStats',
-          data: workflow_statistics,
-        };
-        return res;
-      })
-      .catch((error) => {
-        res = {
-          status: 'error',
-          topic: 'getWorkflowCummStats',
-          action: 'getWorkflowCummStats',
-          data: error,
-        };
-      });
-  }
-
-  async function getTaskList(callSid, taskQueueName) {
-    return await client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks.list({
-        assignmentStatus: 'pending, reserved',
-        taskQueueName: taskQueueName,
-        ordering: 'DateCreated:asc,Priority:desc',
-        limit: 20,
-      })
-      .then(async (tasks) => {
-        let totTasks = tasks.length;
-        for (i = 0; i < tasks.length; i++) {
-          attr = JSON.parse(tasks[i].attributes);
-          temp = {
-            taskSid: tasks[i].sid,
-            callSid: attr.call_sid,
-            priority: tasks[i].priority,
-            age: tasks[i].age,
-            taskQueueSid: tasks[i].taskQueueSid,
-            taskQueueName: tasks[i].taskQueueFriendlyName,
-            taskChannelName: tasks[i].taskChannelUniqueName,
-            dateCreated: tasks[i].dateCreated,
-            dateEnteredQueue: tasks[i].taskQueueEnteredDate,
-          };
-          taskList.push(temp);
-        }
-
-        // find position in Queue
-        var position = 0;
-        position = taskList.findIndex(function (task) {
-          return task.callSid == callSid;
-        });
-
-        // task not in task list ==> position > 20
-        if (position == -1) {
-          position = -1;
-          let numAhead = 20;
-          res = {
-            status: 'success',
-            topic: 'getTaskList',
-            action: 'getTaskList',
-            position: -1,
-            totTasks: totTasks,
-            numAhead: -1,
-            data: taskList,
-          };
-        } else {
-          //  task found in list
-          position = position + 1;
-          let numAhead = position - 1;
-          res = {
-            status: 'success',
-            topic: 'getTaskList',
-            action: 'getTaskList',
-            position: position,
-            totTasks: totTasks,
-            numAhead: numAhead,
-            data: taskList,
-          };
-        }
-        return res;
-      })
-      .catch((error) => {
-        res = {
-          status: 'error',
-          topic: 'getTaskList',
-          action: 'getTaskList',
-          data: error,
-        };
-        return res;
-      });
-  }
-
-  //  moment function to derive hours, minutes and seconds from cummulative time in seconds
-  function waitTimeCalc(type, seconds, waitTime) {
-    var duration = moment.duration(seconds, 'seconds');
-    res = {
-      type: type,
-      hours: duration._data.hours,
-      minutes: duration._data.minutes,
-      seconds: duration._data.seconds,
-    };
-    waitTime.push(res);
-    return waitTime;
-  }
-
-  function getWaitTimeResults(t, waitTime) {
-    //  get formatted wait times
-    waitTimeCalc('maxWaitTime', t.max, waitTime);
-    waitTimeCalc('avgWaitTime', t.avg, waitTime);
-    waitTimeCalc('minWaitTime', t.min, waitTime);
-
-    // get average wait time
-    temp = waitTime.filter((item) => item.type == 'avgWaitTime');
-
-    return temp;
-  }
-  //  END: Supporting functions
 
   //  ==========================
   //  BEGIN:  Main logic
@@ -214,70 +132,58 @@ exports.handler = async function (context, event, callback) {
         //  logic for retrieval of Estimated Wait Time
         let taskInfo;
         if (getEwt || getQueuePosition) {
-          taskInfo = await getTask(context, event.taskSid || event.CallSid);
+          // TODO: Handle error in executing getTask
+          taskInfo = await getTask(context, taskSid || CallSid);
+          if (!taskSid) {
+            taskSid = taskInfo.taskSid;
+          }
         }
 
         if (getEwt) {
-          temp = await getWorkflowCummStats(taskInfo.workflowSid);
-          //  get max, avg, min wait times for the workflow
-          let t = temp.data.waitDurationUntilAccepted;
-          let result = getWaitTimeResults(t, waitTime);
-          //  develop TTS response based on computed wait times
+          let workflowStats = await getWorkflowCummStats(
+            client,
+            context.TWILIO_WORKSPACE_SID,
+            taskInfo.workflowSid,
+            statPeriod
+          );
+          //  Get max, avg, min wait times for the workflow
+          let t = workflowStats.data.waitDurationUntilAccepted;
+          let ewt = getAverageWaitTime(t).minutes;
 
-          let ewt = result[0].minutes;
-
-          if (ewt == 0) {
-            waitTts = 'less than a minute...';
-          }
-          if (ewt == 1) {
-            waitTts = 'less than two minutes...';
-          }
-          if (ewt == 2) {
-            waitTts = 'less than three minutes...';
-          }
-          if (ewt == 3) {
-            waitTts = 'less than four minutes...';
-          }
-          if (ewt >= 4) {
-            waitTts = 'longer than four minutes...';
+          let waitTts = '';
+          switch (ewt) {
+            case 0:
+              waitTts = 'less than a minute...';
+              break;
+            case 4:
+              waitTts = 'more than 4 minutes...';
+              break;
+            default:
+              waitTts = `less than ${ewt + 1}  minutes...`;
           }
 
-          //waitTts = result[0].minutes + ' minute ' + result[0].seconds + 'seconds';
-
-          waitMsg += 'The estimated wait time is ' + waitTts + ' ....';
+          waitMsg += `The estimated wait time is ${waitTts} ....`;
         }
 
         //  Logic for Position in Queue
         if (getQueuePosition) {
-          temp = await getTaskList(event.CallSid, taskInfo.taskQueueName);
-
-          // formatting for the position in queue
-          numAhead = temp.numAhead;
-
-          switch (temp.numAhead) {
+          let taskPositionInfo = await getTaskPositionInQueue(client, taskInfo);
+          switch (taskPositionInfo.position) {
             case 0:
               posQueueMsg = 'Your call is next in queue.... ';
               break;
             case 1:
-              posQueueMsg =
-                'There is ' + temp.numAhead + 'caller ahead of you...';
+              posQueueMsg = 'There is one caller ahead of you...';
               break;
-            // case -1:
-            //   posQueueMsg =
-            //     'There are more than 20 callers ahead of you...';
-            //   break;
+            case -1:
+              posQueueMsg = 'There are more than 20 callers ahead of you...';
+              break;
             default:
-              posQueueMsg =
-                'There are ' + temp.numAhead + "caller's ahead of you...";
+              posQueueMsg = `There are ${taskPositionInfo.position} callers ahead of you...`;
               break;
           }
         }
 
-        let taskSid = event.taskSid
-          ? event.taskSid
-          : taskInfo
-          ? taskInfo.taskSid
-          : undefined;
         if (event.skipGreeting !== 'true') {
           let initGreeting = waitMsg + posQueueMsg;
           initGreeting +=
