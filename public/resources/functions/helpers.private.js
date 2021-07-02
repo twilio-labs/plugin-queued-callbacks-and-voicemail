@@ -1,7 +1,7 @@
 /**
  * Get a Task Resource
  *
- * @param {object} context Twilio function context object 
+ * @param {object} context Twilio function context object
  * @param {string} sid Call Sid or Task Sid
  * @returns {Promise} Promise Object with Task Resource
  */
@@ -34,6 +34,7 @@ function getTask(context, sid) {
         taskQueueSid: task.taskQueueSid,
         taskQueueName: task.taskQueueFriendlyName,
         workflowSid: task.workflowSid,
+        workspaceSid: task.workspaceSid,
         data: result,
       };
       return res;
