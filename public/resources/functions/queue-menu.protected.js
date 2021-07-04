@@ -24,6 +24,10 @@
 */
 const axios = require('axios');
 const moment = require('moment');
+const helpersPath = Runtime.getFunctions()['helpers'].path;
+const { getTask, handleError } = require(helpersPath);
+const optionsPath = Runtime.getFunctions()['options'].path;
+const options = require(optionsPath);
 
 //  retrieve workflow cummulative statistics for Estimated wait time
 async function getWorkflowCummStats(
@@ -48,6 +52,7 @@ async function getWorkflowCummStats(
       };
     })
     .catch((error) => {
+      handleError(error);
       return {
         status: 'error',
         topic: 'getWorkflowCummStats',
@@ -79,6 +84,7 @@ async function getTaskPositionInQueue(client, taskInfo) {
       };
     })
     .catch((error) => {
+      handleError(error);
       return {
         status: 'error',
         topic: 'getTaskList',
@@ -99,11 +105,6 @@ function getAverageWaitTime(t) {
 }
 
 exports.handler = async function (context, event, callback) {
-  const helpersPath = Runtime.getFunctions()['helpers'].path;
-  const { getTask } = require(helpersPath);
-  const optionsPath = Runtime.getFunctions()['options'].path;
-  const options = require(optionsPath);
-
   const client = context.getTwilioClient();
   const domain = 'https://' + context.DOMAIN_NAME;
   let twiml = new Twilio.twiml.VoiceResponse();
@@ -132,14 +133,13 @@ exports.handler = async function (context, event, callback) {
         //  logic for retrieval of Estimated Wait Time
         let taskInfo;
         if (getEwt || getQueuePosition) {
-          // TODO: Handle error in executing getTask
           taskInfo = await getTask(context, taskSid || CallSid);
           if (!taskSid) {
             taskSid = taskInfo.taskSid;
           }
         }
 
-        if (getEwt) {
+        if (taskInfo.status === 'success' && getEwt) {
           let workflowStats = await getWorkflowCummStats(
             client,
             context.TWILIO_WORKSPACE_SID,
@@ -166,7 +166,7 @@ exports.handler = async function (context, event, callback) {
         }
 
         //  Logic for Position in Queue
-        if (getQueuePosition) {
+        if (taskInfo.status === 'success' && getQueuePosition) {
           let taskPositionInfo = await getTaskPositionInQueue(client, taskInfo);
           switch (taskPositionInfo.position) {
             case 0:
@@ -309,18 +309,6 @@ exports.handler = async function (context, event, callback) {
           callback(null, twiml);
           break;
       }
-
       break;
-  }
-
-  function handleError(error) {
-    let message = '';
-    if (error.message) {
-      message += error.message;
-    }
-    if (error.stack) {
-      message += ' | stack: ' + error.stack;
-    }
-    (console.error || console.log).call(console, message || error);
   }
 };
