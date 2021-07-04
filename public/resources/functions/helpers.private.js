@@ -50,4 +50,15 @@ function getTask(context, sid) {
     });
 }
 
-module.exports = { getTask };
+function handleError(error) {
+  let message = '';
+  if (error.message) {
+    message += error.message;
+  }
+  if (error.stack) {
+    message += ' | stack: ' + error.stack;
+  }
+  (console.error || console.log).call(console, message || error);
+}
+
+module.exports = { getTask, handleError };
