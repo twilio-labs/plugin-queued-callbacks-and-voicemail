@@ -28,7 +28,13 @@
 */
 
 const helpersPath = Runtime.getFunctions()['helpers'].path;
-const { getTask, handleError, getTime, cancelTask } = require(helpersPath);
+const {
+  getTask,
+  handleError,
+  getTime,
+  cancelTask,
+  urlBuilder,
+} = require(helpersPath);
 const optionsPath = Runtime.getFunctions()['options'].path;
 const options = require(optionsPath);
 
@@ -87,6 +93,7 @@ exports.handler = async function (context, event, callback) {
   const CallbackNumber = event.cbphone;
   let taskSid = event.taskSid;
   let message = '';
+  let queries;
 
   // main logic for callback methods
   switch (mode) {
@@ -100,16 +107,18 @@ exports.handler = async function (context, event, callback) {
       message += 'If this is correct, press 1...';
       message += 'Press 2 to be called at different number';
 
+      queries = {
+        mode: 'mainProcess',
+        CallSid,
+        cbphone: encodeURI(PhoneNumberFrom),
+      };
+      if (taskSid) {
+        queries.taskSid = taskSid;
+      }
       const gatherConfirmation = twiml.gather({
         input: 'dtmf',
         timeout: '2',
-        action:
-          domain +
-          '/inqueue-callback?mode=mainProcess&Callsid=' +
-          CallSid +
-          '&cbphone=' +
-          encodeURI(PhoneNumberFrom) +
-          (taskSid ? '&taskSid=' + taskSid : ''),
+        action: urlBuilder(`${domain}/inqueue-callback`, queries),
       });
       gatherConfirmation.say(sayOptions, message);
       callback(null, twiml);
@@ -121,14 +130,15 @@ exports.handler = async function (context, event, callback) {
         //  existing number
         case '1':
           // redirect to submitCalBack
-          twiml.redirect(
-            domain +
-              '/inqueue-callback?mode=submitCallback&Callsid=' +
-              CallSid +
-              '&cbphone=' +
-              encodeURI(CallbackNumber) +
-              (taskSid ? '&taskSid=' + taskSid : '')
-          );
+          queries = {
+            mode: 'submitCallback',
+            CallSid,
+            cbphone: encodeURI(CallbackNumber),
+          };
+          if (taskSid) {
+            queries.taskSid = taskSid;
+          }
+          twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
           callback(null, twiml);
           break;
         //  new number
@@ -136,33 +146,35 @@ exports.handler = async function (context, event, callback) {
           message = 'Using your keypad, enter in your phone number...';
           message += 'Press the pound sign when you are done...';
 
+          queries = {
+            mode: 'newNumber',
+            CallSid,
+            cbphone: encodeURI(CallbackNumber),
+          };
+          if (taskSid) {
+            queries.taskSid = taskSid;
+          }
           const GatherNewNumber = twiml.gather({
             input: 'dtmf',
             timeout: '10',
             finishOnKey: '#',
-            action:
-              domain +
-              '/inqueue-callback?mode=newNumber&Callsid=' +
-              CallSid +
-              (taskSid ? '&taskSid=' + taskSid : ''),
+            action: urlBuilder(`${domain}/inqueue-callback`, queries),
           });
           GatherNewNumber.say(sayOptions, message);
-          twiml.redirect(
-            domain +
-              `/inqueue-callback?mode=main${
-                taskSid ? '&taskSid=' + taskSid : ''
-              }`
-          );
+
+          queries.mode = 'main';
+          twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
           callback(null, twiml);
           break;
         default:
+          queries = {
+            mode: 'main',
+          };
+          if (taskSid) {
+            queries.taskSid = taskSid;
+          }
           twiml.say(sayOptions, 'I did not understand your selection.');
-          twiml.redirect(
-            domain +
-              `/inqueue-callback?mode=main${
-                taskSid ? '&taskSid=' + taskSid : ''
-              }`
-          );
+          twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
           callback(null, twiml);
           break;
       }
@@ -178,61 +190,69 @@ exports.handler = async function (context, event, callback) {
       message += 'Press 2 to re-enter your number';
       message += 'Press the star key to return to the main menu';
 
+      queries = {
+        mode: 'newNumberProcess',
+        CallSid,
+        cbphone: encodeURI(NewPhoneNumber),
+      };
+      if (taskSid) {
+        queries.taskSid = taskSid;
+      }
       const GatherConfirmNewNumber = twiml.gather({
         input: 'dtmf',
         timeout: '5',
         finishOnKey: '#',
-        action:
-          domain +
-          '/inqueue-callback?mode=newNumberProcess&Callsid=' +
-          CallSid +
-          '&cbphone=' +
-          encodeURI(NewPhoneNumber) +
-          (taskSid ? '&taskSid=' + taskSid : ''),
+        action: urlBuilder(`${domain}/inqueue-callback`, queries),
       });
       GatherConfirmNewNumber.say(sayOptions, message);
-      twiml.redirect(
-        domain +
-          `/inqueue-callback?mode=main${taskSid ? '&taskSid=' + taskSid : ''}`
-      );
+
+      queries.mode = 'main';
+      twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
       callback(null, twiml);
       break;
 
     //  process new number submission
     case 'newNumberProcess':
+      console.log(event.Digits);
       //  process digits
       switch (event.Digits) {
         //  redirect to submitCallback
         case '1':
-          twiml.redirect(
-            domain +
-              '/inqueue-callback?mode=submitCallback&CallSid=' +
-              CallSid +
-              '&cbphone=' +
-              encodeURI(CallbackNumber) +
-              (taskSid ? '&taskSid=' + taskSid : '')
-          );
+          queries = {
+            mode: 'submitCallback',
+            CallSid,
+            cbphone: encodeURI(CallbackNumber),
+          };
+          if (taskSid) {
+            queries.taskSid = taskSid;
+          }
+          twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
           callback(null, twiml);
           break;
         //  re-enter number
         case '2':
-          twiml.redirect(
-            domain +
-              '/inqueue-callback?mode=mainProcess&CallSid=' +
-              CallSid +
-              '&Digits=2' +
-              (taskSid ? '&taskSid=' + taskSid : '')
-          );
+          queries = {
+            mode: 'mainProcess',
+            CallSid,
+            cbphone: encodeURI(CallbackNumber),
+          };
+          if (taskSid) {
+            queries.taskSid = taskSid;
+          }
+          twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
           callback(null, twiml);
           break;
         //  redirect to main menu
         case '*':
-          twiml.redirect(
-            domain +
-              `/queue-menu?mode=main&skipGreeting=true${
-                taskSid ? '&taskSid=' + taskSid : ''
-              }`
-          );
+          queries = {
+            mode: 'main',
+            skipGreeting: true,
+            CallSid,
+          };
+          if (taskSid) {
+            queries.taskSid = taskSid;
+          }
+          twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
           callback(null, twiml);
           break;
       }
