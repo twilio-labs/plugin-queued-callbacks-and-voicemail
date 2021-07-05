@@ -78,6 +78,12 @@ function getTime(timeZone) {
   return time_json;
 }
 
+const urlBuilder = (url, queries) => {
+  const params = new URLSearchParams();
+  Object.entries(queries).forEach(([key, value]) => params.append(key, value));
+  return `${url}?${params}`;
+}
+
 function handleError(error) {
   let message = '';
   if (error.message) {
@@ -89,4 +95,4 @@ function handleError(error) {
   (console.error || console.log).call(console, message || error);
 }
 
-module.exports = { getTask, handleError, getTime, cancelTask };
+module.exports = { getTask, handleError, getTime, cancelTask, urlBuilder };
