@@ -35,7 +35,7 @@ function getTask(context, sid) {
         taskQueueName: task.taskQueueFriendlyName,
         workflowSid: task.workflowSid,
         workspaceSid: task.workspaceSid,
-        data: result,
+        data: task,
       };
       return res;
     })
@@ -50,6 +50,34 @@ function getTask(context, sid) {
     });
 }
 
+async function cancelTask(client, workspaceSid, taskSid) {
+  try {
+    await client.taskrouter.workspaces(workspaceSid).tasks(taskSid).update({
+      assignmentStatus: 'canceled',
+      reason: 'Voicemail Request',
+    });
+  } catch (error) {
+    console.log('cancelTask Error');
+    handleError(error);
+  }
+}
+
+//  Get current time adjusted to timezone
+function getTime(timeZone) {
+  const moment = require('moment-timezone');
+  const now = new Date();
+  var time_recvd = moment(now);
+  let time_json = {
+    time_recvd: time_recvd,
+    server_tz: timeZone,
+    server_time_long: time_recvd
+      .tz(timeZone)
+      .format('MMM Do YYYY, h:mm:ss a z'),
+    server_time_short: time_recvd.tz(timeZone).format('MM-D-YYYY, h:mm:ss a z'),
+  };
+  return time_json;
+}
+
 function handleError(error) {
   let message = '';
   if (error.message) {
@@ -61,4 +89,4 @@ function handleError(error) {
   (console.error || console.log).call(console, message || error);
 }
 
-module.exports = { getTask, handleError };
+module.exports = { getTask, handleError, getTime, cancelTask };
