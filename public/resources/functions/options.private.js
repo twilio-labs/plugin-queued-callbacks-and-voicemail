@@ -13,4 +13,6 @@ module.exports = {
   VoiceMailAlertTone: '/assets/alertTone.mp3',
   // Timezone configuration
   TimeZone: 'America/Los_Angeles',
+  CallbackAlertTone: '/assets/alertTone.mp3',
+  CallbackTaskPriority: 50,
 };
