@@ -67,10 +67,10 @@ async function createVoicemailTask(event, client, taskInfo, ringback) {
   const taskAttributes = {
     taskType: 'voicemail',
     ringback,
-    to: taskInfo.data.caller, // Inbound caller
+    to: event.Caller, // Inbound caller
     direction: 'inbound',
-    name: 'Voicemail: ' + taskInfo.data.caller,
-    from: taskInfo.data.called, // Twilio Number
+    name: 'Voicemail: ' + event.Caller,
+    from: event.Called, // Twilio Number
     recordingUrl: event.RecordingUrl,
     recordingSid: event.RecordingSid,
     transcriptionSid: event.TranscriptionSid,
@@ -186,7 +186,7 @@ exports.handler = async function (context, event, callback) {
       //  main callback logic
       let taskInfo = await getTask(context, taskSid || CallSid);
       //TODO: handle error in getTask
-     
+
       //  create the Voicemail task
       let ringBackUrl = VoiceMailAlertTone.startsWith('https://')
         ? VoiceMailAlertTone
