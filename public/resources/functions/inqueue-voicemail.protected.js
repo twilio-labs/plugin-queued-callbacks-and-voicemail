@@ -26,39 +26,9 @@
 */
 
 const helpersPath = Runtime.getFunctions()['helpers'].path;
-const { getTask, handleError } = require(helpersPath);
+const { getTask, cancelTask, getTime, handleError } = require(helpersPath);
 const optionsPath = Runtime.getFunctions()['options'].path;
 const options = require(optionsPath);
-
-//  Get current time adjusted to timezone
-function getTime(timeZone) {
-  const moment = require('moment-timezone');
-  const now = new Date();
-  var time_recvd = moment(now);
-  let time_json = {
-    time_recvd: time_recvd,
-    server_tz: timeZone,
-    server_time_long: time_recvd
-      .tz(timeZone)
-      .format('MMM Do YYYY, h:mm:ss a z'),
-    server_time_short: time_recvd.tz(timeZone).format('MM-D-YYYY, h:mm:ss a z'),
-  };
-  return time_json;
-}
-
-//  Cancel the existing task
-//  update ==> assignmentStatus and reason
-async function cancelTask(client, workspaceSid, taskSid) {
-  try {
-    await client.taskrouter.workspaces(workspaceSid).tasks(taskSid).update({
-      assignmentStatus: 'canceled',
-      reason: 'Voicemail Request',
-    });
-  } catch (error) {
-    console.log('cancelTask Error');
-    handleError(error);
-  }
-}
 
 // create the voicemail task
 async function createVoicemailTask(event, client, taskInfo, ringback) {
