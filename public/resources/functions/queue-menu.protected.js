@@ -80,35 +80,6 @@ exports.handler = async function(context, event, callback) {
     }
   }
 
-  //  retrieve workflow SID give CallSid using the TaskRouter API
-  async function getWorkFlow(callSid) {
-    return client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks.list({
-        evaluateTaskAttributes: `call_sid= '${callSid}'`,
-        limit: 20
-      })
-      .then(tasks => {
-        res = {
-          status: 'success',
-          topic: 'getWorkFlow',
-          action: 'getWorkFlow',
-          workflowSid: tasks[0].workflowSid,
-          data: tasks
-        };
-        return res;
-      })
-      .catch(error => {
-        res = {
-          status: 'error',
-          topic: 'getWorkFlow',
-          action: 'getWorkFlow',
-          data: error
-        };
-        return res;
-      });
-  }
-
   //  retrieve workflow cummulative statistics for Estimated wait time
   async function getWorkflowCummStats(workflowSid) {
     return client.taskrouter
@@ -137,22 +108,39 @@ exports.handler = async function(context, event, callback) {
       });
   }
 
-  async function getTask(callSid) {
-    return client.taskrouter
+
+  /**
+   * Get a Task Resource
+   * 
+   * @param {string} sid Call Sid or Task Sid 
+   * @returns {Promise} Promise Object with Task Resource 
+   */
+  function getTask(sid) {
+    let fetchTask;
+    if (sid.startsWith('CA')) {
+      fetchTask = client.taskrouter
       .workspaces(context.TWILIO_WORKSPACE_SID)
       .tasks.list({
-        evaluateTaskAttributes: `call_sid= '${callSid}'`,
+        evaluateTaskAttributes: `call_sid= '${sid}'`,
         limit: 20
       })
-      .then(async () => {
+    } else {
+      fetchTask = client.taskrouter
+      .workspaces(context.TWILIO_WORKSPACE_SID)
+      .tasks(sid).fetch()
+    }
+    return fetchTask
+      .then((result) => {
+        let task = Array.isArray(result) ? result[0] : result;
         res = {
           status: 'success',
           topic: 'getTask',
           action: 'getTask',
-          taskSid: task[0].sid,
-          taskQueueSid: task[0].taskQueueSid,
-          taskQueueName: task[0].taskQueueFriendlyName,
-          data: task[0]
+          taskSid: task.sid,
+          taskQueueSid: task.taskQueueSid,
+          taskQueueName: task.taskQueueFriendlyName,
+          workflowSid: task.workflowSid,
+          data: result
         };
         return res;
       })
@@ -272,9 +260,13 @@ exports.handler = async function(context, event, callback) {
     case 'main':
       async function main() {
         //  logic for retrieval of Estimated Wait Time
+        let taskInfo
+        if (getEwt || getQueuePosition) {
+          taskInfo = await getTask(event.taskSid || event.CallSid);
+        }
+
         if (getEwt) {
-          temp = await getWorkFlow(event.CallSid);
-          temp = await getWorkflowCummStats(temp.workflowSid);
+          temp = await getWorkflowCummStats(taskInfo.workflowSid);
           //  get max, avg, min wait times for the workflow
           let t = temp.data.waitDurationUntilAccepted;
           let result = getWaitTimeResults(t, waitTime);
@@ -305,8 +297,7 @@ exports.handler = async function(context, event, callback) {
 
         //  Logic for Position in Queue
         if (getQueuePosition) {
-          temp = await getTask(event.CallSid);
-          temp = await getTaskList(event.CallSid, temp.taskQueueName);
+          temp = await getTaskList(event.CallSid, taskInfo.taskQueueName);
 
           // formatting for the position in queue
           numAhead = temp.numAhead;
@@ -330,6 +321,7 @@ exports.handler = async function(context, event, callback) {
           }
         }
 
+        let taskSid = event.taskSid ? event.taskSid : (taskInfo ? taskInfo.taskSid : undefined)
         if (event.skipGreeting !== 'true') {
           let initGreeting = waitMsg + posQueueMsg;
           initGreeting +=
@@ -341,10 +333,11 @@ exports.handler = async function(context, event, callback) {
         const gather = twiml.gather({
           input: 'dtmf',
           timeout: '2',
-          action: domain + '/queue-menu?mode=mainProcess'
+          action: domain + `/queue-menu?mode=mainProcess${taskSid ? '&taskSid=' + taskSid : ''}`
         });
         gather.say(sayOptions, message);
         gather.play(domain + '/assets/guitar_music.mp3');
+        twiml.redirect(domain + `/queue-menu?mode=main${taskSid ? '&taskSid=' + taskSid : ''}`);
         callback(null, twiml);
       }
       main();
@@ -361,15 +354,15 @@ exports.handler = async function(context, event, callback) {
         const gather = twiml.gather({
           input: 'dtmf',
           timeout: '1',
-          action: domain + '/queue-menu?mode=menuProcess'
+          action: domain + `/queue-menu?mode=menuProcess${event.taskSid ? '&taskSid=' + event.taskSid : ''}`
         });
         gather.say(sayOptions, message);
         gather.play(domain + '/assets/guitar_music.mp3');
-
+        twiml.redirect(domain + `/queue-menu?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`)
         callback(null, twiml);
       } else {
         twiml.say(sayOptions, 'I did not understand your selection.');
-        twiml.redirect(domain + '/queue-menu?mode=main&skipGreeting=true');
+        twiml.redirect(domain + `/queue-menu?mode=main&skipGreeting=true${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
         callback(null, twiml);
       }
 
@@ -381,30 +374,30 @@ exports.handler = async function(context, event, callback) {
         case '1':
           //  stay in queue
           //twiml.say(sayOptions, 'Please wait for the next available agent');
-          twiml.redirect(domain + '/queue-menu?mode=main&skipGreeting=true');
+          twiml.redirect(domain + `/queue-menu?mode=main&skipGreeting=true${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
         //  request a callback
         case '2':
-          twiml.redirect(domain + '/inqueue-callback?mode=main');
+          twiml.redirect(domain + `/inqueue-callback?mode=main${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
         //  leave a voicemail
         case '3':
-          twiml.redirect(domain + '/inqueue-voicemail?mode=pre-process');
+          twiml.redirect(domain + `/inqueue-voicemail?mode=pre-process${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
 
         // listen options menu again
         case '*':
-          twiml.redirect(domain + '/queue-menu?mode=mainProcess&Digits=1');
+          twiml.redirect(domain + `/queue-menu?mode=mainProcess&Digits=1${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
 
         //  listen to menu again
         default:
           twiml.say(sayOptions, 'I did not understand your selection.');
-          twiml.redirect(domain + '/queue-menu?mode=mainProcess&Digits=1');
+          twiml.redirect(domain + `/queue-menu?mode=mainProcess&Digits=1${event.taskSid ? '&taskSid=' + event.taskSid : ''}`);
           callback(null, twiml);
           break;
       }
