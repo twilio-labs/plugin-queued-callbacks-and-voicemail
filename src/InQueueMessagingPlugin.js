@@ -1,8 +1,8 @@
 import { VERSION } from '@twilio/flex-ui';
 import { FlexPlugin } from 'flex-plugin';
+
 import { InQueueMessagingHelper } from './helpers/InQueueMessagingHelper';
 import reducers, { namespace } from './states';
-
 
 const PLUGIN_NAME = 'InQueueMessagingPlugin';
 
@@ -33,9 +33,7 @@ export default class InQueueMessagingPlugin extends FlexPlugin {
   registerReducers(manager) {
     if (!manager.store.addReducer) {
       // eslint: disable-next-line
-      console.error(
-        `You need FlexUI > 1.9.0 to use built-in redux; you are currently on ${VERSION}`
-      );
+      console.error(`You need FlexUI > 1.9.0 to use built-in redux; you are currently on ${VERSION}`);
       return;
     }
     //  add the reducers to the manager store
