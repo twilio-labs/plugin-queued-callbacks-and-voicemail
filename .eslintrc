@@ -1,0 +1,17 @@
+{
+  "extends": [
+    "twilio-react"
+  ],
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 2019
+  },
+  "rules": {
+    "import/no-unused-modules": "off",
+    "import/no-extraneous-dependencies": "off",
+    "react/prop-types": "warn",
+    "jsx-a11y/label-has-associated-control": "warn",
+    "jsx-a11y/media-has-caption": "warn",
+    "react/no-string-refs": "warn"
+  }
+}
