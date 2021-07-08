@@ -1,3 +1,19 @@
+/* eslint-disable camelcase */
+// Temporary disabling camelcase rule. This require a change in the plugin code
+
+const moment = require('moment-timezone');
+
+function handleError(error) {
+  let message = '';
+  if (error.message) {
+    message += error.message;
+  }
+  if (error.stack) {
+    message += ` | stack: ${error.stack}`;
+  }
+  (console.error || console.log).call(console, message || error);
+}
+
 /**
  * Get a Task Resource
  *
@@ -10,22 +26,17 @@ function getTask(context, sid) {
   let fetchTask;
 
   if (sid.startsWith('CA')) {
-    fetchTask = client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks.list({
-        evaluateTaskAttributes: `call_sid= '${sid}'`,
-        limit: 20,
-      });
+    fetchTask = client.taskrouter.workspaces(context.TWILIO_WORKSPACE_SID).tasks.list({
+      evaluateTaskAttributes: `call_sid= '${sid}'`,
+      limit: 20,
+    });
   } else {
-    fetchTask = client.taskrouter
-      .workspaces(context.TWILIO_WORKSPACE_SID)
-      .tasks(sid)
-      .fetch();
+    fetchTask = client.taskrouter.workspaces(context.TWILIO_WORKSPACE_SID).tasks(sid).fetch();
   }
 
   return fetchTask
     .then((result) => {
-      let task = Array.isArray(result) ? result[0] : result;
+      const task = Array.isArray(result) ? result[0] : result;
       res = {
         status: 'success',
         topic: 'getTask',
@@ -64,35 +75,20 @@ async function cancelTask(client, workspaceSid, taskSid) {
 
 //  Get current time adjusted to timezone
 function getTime(timeZone) {
-  const moment = require('moment-timezone');
   const now = new Date();
-  var time_recvd = moment(now);
-  let time_json = {
-    time_recvd: time_recvd,
+  const timeRecvd = moment(now);
+  return {
+    time_recvd: timeRecvd,
     server_tz: timeZone,
-    server_time_long: time_recvd
-      .tz(timeZone)
-      .format('MMM Do YYYY, h:mm:ss a z'),
-    server_time_short: time_recvd.tz(timeZone).format('MM-D-YYYY, h:mm:ss a z'),
+    server_time_long: timeRecvd.tz(timeZone).format('MMM Do YYYY, h:mm:ss a z'),
+    server_time_short: timeRecvd.tz(timeZone).format('MM-D-YYYY, h:mm:ss a z'),
   };
-  return time_json;
 }
 
 const urlBuilder = (url, queries) => {
   const params = new URLSearchParams();
   Object.entries(queries).forEach(([key, value]) => params.append(key, value));
   return `${url}?${params}`;
-}
-
-function handleError(error) {
-  let message = '';
-  if (error.message) {
-    message += error.message;
-  }
-  if (error.stack) {
-    message += ' | stack: ' + error.stack;
-  }
-  (console.error || console.log).call(console, message || error);
-}
+};
 
 module.exports = { getTask, handleError, getTime, cancelTask, urlBuilder };

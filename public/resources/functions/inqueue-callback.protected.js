@@ -1,40 +1,34 @@
 /*
-    Synopsis:  This function provide complete handling of Flex In-Queue Callback capabilities to include:
-        1. Immediate call-back request to originating ANI ( Press 1), and
-        2. Request a callback to separate number
-        
-    Callback task are created and linked to the originating call (Flex Insights reporting). The flex plugin provides 
-    a UI for management of the callback request including a re-queueing capability.capability
-    
-    name: util_InQueueCallBackMenu
-    path: /inqueue-callback
-    private: CHECKED
-    
-    Function Methods (mode)
-     - main             => main entry point for callback flow
-     - mainProcess      => process main menu DTMF selection
-     - newNumber        => menu initiating new number capture
-     - submitCallback   => initiate callback creation ( getTask, cancelTask, createCallback)
-     
-    Customization:
-     - Set TTS voice option
-     - Set initial priority of callback task (default: 50)
-     - Set timezone configuration ( server_tz )
+ *Synopsis:  This function provide complete handling of Flex In-Queue Callback capabilities to include:
+ *    1. Immediate call-back request to originating ANI ( Press 1), and
+ *    2. Request a callback to separate number
+ *
+ *Callback task are created and linked to the originating call (Flex Insights reporting). The flex plugin provides
+ *a UI for management of the callback request including a re-queueing capability.capability
+ *
+ *name: util_InQueueCallBackMenu
+ *path: /inqueue-callback
+ *private: CHECKED
+ *
+ *Function Methods (mode)
+ * - main             => main entry point for callback flow
+ * - mainProcess      => process main menu DTMF selection
+ * - newNumber        => menu initiating new number capture
+ * - submitCallback   => initiate callback creation ( getTask, cancelTask, createCallback)
+ *
+ *Customization:
+ * - Set TTS voice option
+ * - Set initial priority of callback task (default: 50)
+ * - Set timezone configuration ( server_tz )
+ *
+ *Install/Config: See documentation
+ *
+ *Last Updated: 07/05/2021
+ */
 
-    Install/Config: See documentation
-
-    Last Updated: 07/05/2021
-*/
-
-const helpersPath = Runtime.getFunctions()['helpers'].path;
-const {
-  getTask,
-  handleError,
-  getTime,
-  cancelTask,
-  urlBuilder,
-} = require(helpersPath);
-const optionsPath = Runtime.getFunctions()['options'].path;
+const helpersPath = Runtime.getFunctions().helpers.path;
+const { getTask, handleError, getTime, cancelTask, urlBuilder } = require(helpersPath);
+const optionsPath = Runtime.getFunctions().options.path;
 const options = require(optionsPath);
 
 // Create the callback task
@@ -44,7 +38,7 @@ async function createCallbackTask(client, phoneNumber, taskInfo, ringback) {
 
   const newTaskAttributes = {
     taskType: 'callback',
-    ringback: ringback,
+    ringback,
     to: phoneNumber || taskAttributes.caller,
     direction: 'inbound',
     name: `Callback: ${phoneNumber || taskAttributes.caller}`,
@@ -53,6 +47,7 @@ async function createCallbackTask(client, phoneNumber, taskInfo, ringback) {
     queueTargetName: taskInfo.taskQueueName,
     queueTargetSid: taskInfo.taskQueueSid,
     workflowTargetSid: taskInfo.workflowSid,
+    // eslint-disable-next-line camelcase
     ui_plugin: { cbCallButtonAccessibility: false },
     placeCallRetry: 1,
   };
@@ -77,20 +72,21 @@ function formatPhoneNumber(phoneNumber) {
   return phoneNumber.split('').join('...');
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 exports.handler = async function (context, event, callback) {
   const client = context.getTwilioClient();
-  let twiml = new Twilio.twiml.VoiceResponse();
+  const twiml = new Twilio.twiml.VoiceResponse();
 
-  let domain = 'https://' + context.DOMAIN_NAME;
+  const domain = `https://${context.DOMAIN_NAME}`;
 
   // Load options
   const { sayOptions, CallbackAlertTone } = options;
 
-  const mode = event.mode;
+  const { mode } = event;
   const PhoneNumberFrom = event.From;
-  const CallSid = event.CallSid;
+  const { CallSid } = event;
   const CallbackNumber = event.cbphone;
-  let taskSid = event.taskSid;
+  const { taskSid } = event;
   let message = '';
   let queries;
 
@@ -99,10 +95,7 @@ exports.handler = async function (context, event, callback) {
     //  present main menu options
     case 'main':
       // main menu
-      message =
-        'You have requested a callback at ' +
-        formatPhoneNumber(PhoneNumberFrom) +
-        '...';
+      message = `You have requested a callback at ${formatPhoneNumber(PhoneNumberFrom)}...`;
       message += 'If this is correct, press 1...';
       message += 'Press 2 to be called at different number';
 
@@ -120,7 +113,7 @@ exports.handler = async function (context, event, callback) {
         action: urlBuilder(`${domain}/inqueue-callback`, queries),
       });
       gatherConfirmation.say(sayOptions, message);
-      callback(null, twiml);
+      return callback(null, twiml);
       break;
 
     //  process main menu selections
@@ -138,7 +131,7 @@ exports.handler = async function (context, event, callback) {
             queries.taskSid = taskSid;
           }
           twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
-          callback(null, twiml);
+          return callback(null, twiml);
           break;
         //  new number
         case '2':
@@ -163,7 +156,7 @@ exports.handler = async function (context, event, callback) {
 
           queries.mode = 'main';
           twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
-          callback(null, twiml);
+          return callback(null, twiml);
           break;
         case '*':
           queries = {
@@ -175,7 +168,7 @@ exports.handler = async function (context, event, callback) {
             queries.taskSid = taskSid;
           }
           twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
-          callback(null, twiml);
+          return callback(null, twiml);
           break;
         default:
           queries = {
@@ -186,7 +179,7 @@ exports.handler = async function (context, event, callback) {
           }
           twiml.say(sayOptions, 'I did not understand your selection.');
           twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
-          callback(null, twiml);
+          return callback(null, twiml);
           break;
       }
       break;
@@ -196,7 +189,7 @@ exports.handler = async function (context, event, callback) {
       const NewPhoneNumber = event.Digits;
       // TODO: Handle country code in new number
 
-      message = 'You entered ' + formatPhoneNumber(NewPhoneNumber) + ' ...';
+      message = `You entered ${formatPhoneNumber(NewPhoneNumber)} ...`;
       message += 'Press 1 if this is correct...';
       message += 'Press 2 to re-enter your number';
       message += 'Press the star key to return to the main menu';
@@ -219,39 +212,39 @@ exports.handler = async function (context, event, callback) {
 
       queries.mode = 'main';
       twiml.redirect(urlBuilder(`${domain}/inqueue-callback`, queries));
-      callback(null, twiml);
+      return callback(null, twiml);
       break;
 
     //  handler to submit the callback
     case 'submitCallback':
-      //  Steps
-      //  1. Fetch TaskSid ( read task w/ attribute of call_sid);
-      //  2. Update existing task (assignmentStatus==>'canceled'; reason==>'callback requested' )
-      //  3. Create new task ( callback );
-      //  4. Hangup callback
-      //
-      //  main callback logic
-      //  get taskSid based on callSid
-      //  taskInfo = { "sid" : <taskSid>, "queueTargetName" : <taskQueueName>, "queueTargetSid" : <taskQueueSid> };
-      let taskInfo = await getTask(context, CallSid);
+      /*
+       *  Steps
+       *  1. Fetch TaskSid ( read task w/ attribute of call_sid);
+       *  2. Update existing task (assignmentStatus==>'canceled'; reason==>'callback requested' )
+       *  3. Create new task ( callback );
+       *  4. Hangup callback
+       *
+       *  main callback logic
+       *  get taskSid based on callSid
+       *  taskInfo = { "sid" : <taskSid>, "queueTargetName" : <taskQueueName>, "queueTargetSid" : <taskQueueSid> };
+       */
+      const taskInfo = await getTask(context, CallSid);
 
       // Cancel current Task
       await cancelTask(client, context.TWILIO_WORKSPACE_SID, taskInfo.taskSid);
       // Create the callback task
-      let ringBackUrl = CallbackAlertTone.startsWith('https://')
-        ? CallbackAlertTone
-        : domain + CallbackAlertTone;
+      const ringBackUrl = CallbackAlertTone.startsWith('https://') ? CallbackAlertTone : domain + CallbackAlertTone;
       await createCallbackTask(client, CallbackNumber, taskInfo, ringBackUrl);
 
       //  hangup the call
       twiml.say(sayOptions, 'Your callback request has been delivered...');
-      twiml.say(
-        sayOptions,
-        'An available care specialist will reach out to contact you...'
-      );
+      twiml.say(sayOptions, 'An available care specialist will reach out to contact you...');
       twiml.say(sayOptions, 'Thank you for your call.');
       twiml.hangup();
-      callback(null, twiml);
+      return callback(null, twiml);
+      break;
+    default:
+      return callback(500, 'Mode not specified');
       break;
   }
 };
