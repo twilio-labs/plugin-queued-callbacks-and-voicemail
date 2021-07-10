@@ -113,6 +113,7 @@ exports.handler = async function (context, event, callback) {
         action: urlBuilder(`${domain}/inqueue-callback`, queries),
       });
       gatherConfirmation.say(sayOptions, message);
+      twiml.redirect(`${domain}/queue-menu?mode=main${taskSid ? `&taskSid=${taskSid}` : ''}`);
       return callback(null, twiml);
       break;
 
@@ -228,7 +229,7 @@ exports.handler = async function (context, event, callback) {
        *  get taskSid based on callSid
        *  taskInfo = { "sid" : <taskSid>, "queueTargetName" : <taskQueueName>, "queueTargetSid" : <taskQueueSid> };
        */
-      const taskInfo = await getTask(context, CallSid);
+      const taskInfo = await getTask(context, taskSid || CallSid);
 
       // Cancel current Task
       await cancelTask(client, context.TWILIO_WORKSPACE_SID, taskInfo.taskSid);
