@@ -11,16 +11,20 @@ The Queued Callback and Voicemail for Flex plugin helps Flex admins automate han
 ### Requirements
 
 To deploy this plugin, you will need:
+
 - An active Twilio account with Flex provisioned. Refer to the [Flex Quickstart](https://www.twilio.com/docs/flex/quickstart/flex-basics#sign-up-for-or-sign-in-to-twilio-and-create-a-new-flex-project) to create one.
 - npm version 5.0.0 or later installed (type `npm -v` in your terminal to check)
 - Node version 12.21 or later installed (type `node -v` in your terminal to check)
 - [Twilio CLI](https://www.twilio.com/docs/twilio-cli/quickstart#install-twilio-cli) along with the [Flex CLI Plugin](https://www.twilio.com/docs/twilio-cli/plugins#available-plugins) and the [Serverless Plugin](https://www.twilio.com/docs/twilio-cli/plugins#available-plugins). Run the following commands to install them:
-   ```
-   # Install the Twilio CLI
-   npm install twilio-cli -g
-   # Install the Serverless and Flex as Plugins
-   twilio plugins:install @twilio-labs/plugin-serverless
-   twilio plugins:install @twilio-labs/plugin-flex
+
+	```
+	# Install the Twilio CLI
+	npm install twilio-cli -g
+	# Install the Serverless and Flex as Plugins
+	twilio plugins:install @twilio-labs/plugin-serverless
+	twilio plugins:install @twilio-labs/plugin-flex
+	```
+
 - A GitHub account
 - [Native Dialpad configured on your Flex instance](https://www.twilio.com/docs/flex/dialpad/enable)
 
@@ -73,7 +77,7 @@ npm run setup
 
 See [Twilio Account Settings](#twilio-account-settings) to locate the necessary environment variables.
 
-4. Run the application
+7. Run the application
 
 ```bash
 npm start
@@ -85,7 +89,7 @@ Alternatively, you can use this command to start the server in development mode.
 npm run dev
 ```
 
-5. Navigate to [http://localhost:3000](http://localhost:3000)
+8. Navigate to [http://localhost:3000](http://localhost:3000)
 
 That's it!
 
@@ -95,24 +99,24 @@ You need to deploy the functions associated with the Callback and Voicemail Flex
 
 #### Pre-deployment Steps
 
-Step 1: From the root directory of your copy of the source code, change into `public/resources` and rename `.env.example` to `.env`.
+1. From the root directory of your copy of the source code, change into `public/resources` and rename `.env.example` to `.env`.
 
 ```
 cd public/resources && mv .env.example .env
 ```
 
-Step 2: Open `.env` with your text editor and modify TWILIO_WORKSPACE_SID with your Flex Task Assignment SID.
+2. Open `.env` with your text editor and modify TWILIO_WORKSPACE_SID with your Flex Task Assignment SID.
 
 ```
 TWILIO_WORKSPACE_SID=WSxxxxxxxxxxxxxxxxxxxxxx`
 ```
 
-To deploy your Callback and Voicemail functions and assets, run the following:
+3. To deploy your Callback and Voicemail functions and assets, run the following:
 
 ```
-resources $ twilio serverless:deploy --assets
+$ twilio serverless:deploy --assets
 
-# Example Output
+## Example Output
 Deploying functions & assets to the Twilio Runtime
 Env Variables
 ⠇ Creating 4 Functions
@@ -135,9 +139,7 @@ Assets:
    https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/assets/guitar_music.mp3
 ```
 
-Copy and save the domain returned when you deploy a function. You will need it in the next step. 
-
-If you forget to copy the domain, you can also find it by navigating to [Functions > API](https://www.twilio.com/console/functions/api) in the Twilio Console.
+_Note:_ Copy and save the domain returned when you deploy a function. You will need it in the next step. If you forget to copy the domain, you can also find it by navigating to [Functions > API](https://www.twilio.com/console/functions/api) in the Twilio Console.
 
 > Debugging Tip: Pass the -l or logging flag to review deployment logs. For example, you can pass `-l debug` to turn on debugging logs.
 
@@ -147,23 +149,23 @@ Once you have deployed the function, it is time to deploy the plugin to your Fle
 
 Run the following commands in the plugin root directory. We will leverage the Twilio CLI to build and deploy the Plugin.
 
-- Rename `.env.example` to `.env`.
-- Open `.env` with your text editor and modify the `REACT_APP_SERVICE_BASE_URL` property to the Domain name you copied in the previous step. Make sure to prefix it with "https://".
+1. Rename `.env.example` to `.env`.
+2. Open `.env` with your text editor and modify the `REACT_APP_SERVICE_BASE_URL` property to the Domain name you copied in the previous step. Make sure to prefix it with "https://".
+	
+	```
+	plugin-queued-callbacks-and-voicemail $ mv .env.example .env
+	
+	# .env
+	REACT_APP_SERVICE_BASE_URL=https://plugin-queued-callbacks-voicemail-functions-4135-dev.twil.io
+	```
 
-```
-plugin-queued-callbacks-and-voicemail $ mv .env.example .env
+3. When you are ready to deploy the plugin, run the following in a command shell:
+	
+	```
+	plugin-queued-callbacks-and-voicemail $ twilio flex:plugins:deploy --major --changelog "Updating to use the latest Twilio CLI Flex plugin" --description "Queued callbacks and voicemail"
+	``` 
 
-# .env
-REACT_APP_SERVICE_BASE_URL=https://plugin-queued-callbacks-voicemail-functions-4135-dev.twil.io
-```
-
-When you are ready to deploy the plugin, run the following in a command shell:
-
-```
-plugin-queued-callbacks-and-voicemail $ twilio flex:plugins:deploy --major --changelog "Updating to use the latest Twilio CLI Flex plugin" --description "Queued callbacks and voicemail"
-``` 
-
-To enable the plugin on your contact center, follow the suggested next step on the deployment confirmation. To enable it via the Flex UI, see the [Plugins Dashboard documentation](https://www.twilio.com/docs/flex/developer/plugins/dashboard#stage-plugin-changes).
+4. To enable the plugin on your contact center, follow the suggested next step on the deployment confirmation. To enable it via the Flex UI, see the [Plugins Dashboard documentation](https://www.twilio.com/docs/flex/developer/plugins/dashboard#stage-plugin-changes).
 
 
 ## License
