@@ -37,7 +37,7 @@ function getTask(context, sid) {
   return fetchTask
     .then((result) => {
       const task = Array.isArray(result) ? result[0] : result;
-      res = {
+      return {
         status: 'success',
         topic: 'getTask',
         action: 'getTask',
@@ -48,19 +48,25 @@ function getTask(context, sid) {
         workspaceSid: task.workspaceSid,
         data: task,
       };
-      return res;
     })
     .catch((error) => {
-      res = {
+      return {
         status: 'error',
         topic: 'getTask',
         action: 'getTask',
         data: error,
       };
-      return res;
     });
 }
 
+/**
+ *
+ * Cancel a Task
+ *
+ * @param {Object} client Twilio Client
+ * @param {string} workspaceSid SID of the workspace the task belong to
+ * @param {string} taskSid SID of the task to be cancelled
+ */
 async function cancelTask(client, workspaceSid, taskSid) {
   try {
     await client.taskrouter.workspaces(workspaceSid).tasks(taskSid).update({
@@ -73,7 +79,14 @@ async function cancelTask(client, workspaceSid, taskSid) {
   }
 }
 
-//  Get current time adjusted to timezone
+/**
+ *
+ * Get current time adjusted to timezone
+ *
+ * @param {string} timeZone Timezone name
+ * @returns {Object}
+ */
+//
 function getTime(timeZone) {
   const now = new Date();
   const timeRecvd = moment(now);
@@ -85,6 +98,14 @@ function getTime(timeZone) {
   };
 }
 
+/**
+ *
+ *  Build a url with query parameters
+ *
+ * @param {string} url Base URL
+ * @param {Object} queries Key-value pairs for query parameters
+ * @returns {string}
+ */
 const urlBuilder = (url, queries) => {
   const params = new URLSearchParams();
   Object.entries(queries).forEach(([key, value]) => params.append(key, value));
