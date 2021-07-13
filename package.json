@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "postinstall": "flex-plugin pre-script-check",
-    "lint": "eslint --ext js src/",
+    "lint": "eslint --ext js src/ public/resources/functions",
     "lint:fix": "npm run lint -- --fix",
     "prepare": "husky install"
   },
