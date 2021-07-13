@@ -144,12 +144,12 @@ exports.handler = JWEValidator(async function (context, event, callback) {
 
       //  main logic
 
-      let result = await getTask(event.taskSid);
-      result = await updateTask(event.taskSid, result.attr);
-      const del = await deleteTranscription(event.transcriptSid);
-      const cal = await deleteRecord(event.recordingSid);
+      const taskInfo = await getTask(event.taskSid);
+      const cancelTaskResult = await updateTask(event.taskSid, taskInfo.attr);
+      await deleteTranscription(event.transcriptSid);
+      await deleteRecord(event.recordingSid);
 
-      return callback(null, resp.setBody(result));
+      return callback(null, resp.setBody(cancelTaskResult));
 
       break;
 
@@ -201,10 +201,8 @@ exports.handler = JWEValidator(async function (context, event, callback) {
        * original task in Twilio WFO
        */
       if (!newAttributes.hasOwnProperty('conversations')) {
-        newAttributes = Object.assign(newAttributes, {
-          // eslint-disable-next-line camelcase
-          conversations: { conversation_id: event.taskSid },
-        });
+        // eslint-disable-next-line camelcase
+        newAttributes = { ...newAttributes, conversations: { conversation_id: event.taskSid } };
       }
       //  create new task
       await PluginTaskUpdate(event.type, event.taskSid, event.attributes, event.state);
