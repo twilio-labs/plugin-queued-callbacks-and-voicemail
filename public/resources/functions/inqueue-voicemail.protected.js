@@ -150,7 +150,7 @@ exports.handler = async function (context, event, callback) {
 
       //  create the Voicemail task
       const ringBackUrl = VoiceMailAlertTone.startsWith('https://') ? VoiceMailAlertTone : domain + VoiceMailAlertTone;
-      createVoicemailTask(event, client, taskInfo, ringBackUrl);
+      await createVoicemailTask(event, client, taskInfo, ringBackUrl);
       return callback(null, '');
       break;
     default:
