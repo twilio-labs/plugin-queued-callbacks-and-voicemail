@@ -86,7 +86,6 @@ async function cancelTask(client, workspaceSid, taskSid) {
  * @param {string} timeZone Timezone name
  * @returns {Object}
  */
-//
 function getTime(timeZone) {
   const now = new Date();
   const timeRecvd = moment(now);
