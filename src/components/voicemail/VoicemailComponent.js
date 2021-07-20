@@ -23,9 +23,10 @@ export default class VoicemailComponent extends React.Component {
    * create outbound call from Flex using Actions API 'StartOutboundCall'
    *
    */
-  vmCallButtonAccessibility = async (state) => inqueueUtils(this.props.task, 'voicemail', state);
+  vmCallButtonAccessibility = async (state) =>
+    inqueueUtils.callButtonAccessibility(this.props.task, 'voicemail', state);
 
-  startTransfer = async () => inqueueUtils(this.props.task);
+  startTransfer = async () => inqueueUtils.startTransfer(this.props.task);
 
   // web service call to delete the call recording/transcript
   deleteResources = async () => inqueueUtils.deleteResource(this.props.task);
