@@ -40,19 +40,19 @@ export const startTransfer = async (task) => {
 
 export const deleteResource = async (task) => {
   const { taskSid, workflowSid, queueName, attributes } = task;
-  const { recordSid, transcriptSid } = attributes;
+  const { recordingSid, transcriptionSid } = attributes;
   const data = {
     mode: 'deleteRecordResources',
     taskSid,
-    recordingSid: recordSid,
-    transcriptSid,
+    recordingSid,
+    transcriptionSid,
     Token: Flex.Manager.getInstance().user.token,
     attributes,
     workflowSid,
     queueName,
   };
 
-  return http.postUrlEncoded(url, data, {
+  return http.post(url, data, {
     verbose: true,
     title: 'Delete resource web service',
   });

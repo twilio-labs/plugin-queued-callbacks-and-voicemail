@@ -146,7 +146,7 @@ exports.handler = JWEValidator(async function (context, event, callback) {
 
       const taskInfo = await getTask(event.taskSid);
       const cancelTaskResult = await updateTask(event.taskSid, taskInfo.attr);
-      await deleteTranscription(event.transcriptSid);
+      await deleteTranscription(event.transcriptionSid);
       await deleteRecord(event.recordingSid);
 
       return callback(null, resp.setBody(cancelTaskResult));
