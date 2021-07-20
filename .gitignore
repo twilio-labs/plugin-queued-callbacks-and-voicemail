@@ -111,3 +111,6 @@ dist
 
 # Flex plugin build folder
 build/
+
+# Flex plugin app configuration file
+appConfig.js
