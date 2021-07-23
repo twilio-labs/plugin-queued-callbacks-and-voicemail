@@ -104,3 +104,13 @@ dist
 .tern-port
 
 .idea
+.DS_Store
+
+# Twilio serverless CLI plugin artifact 
+.twiliodeployinfo
+
+# Flex plugin build folder
+build/
+
+# Flex plugin app configuration file
+appConfig.js
