@@ -9,10 +9,12 @@ module.exports = {
   getQueuePosition: true,
   // Priority for the Task generatared by the VoiceMail
   VoiceMailTaskPriority: 50,
-  // Agent audible alert sound file - task attribute value
+  // Agent audible alert sound file for voice mail
   VoiceMailAlertTone: '/assets/alertTone.mp3',
+  // Priority for the Task generatared by the VoiceMail
+  CallbackTaskPriority: 50,
+  // Agent audible alert sound file for callback call
+  CallbackAlertTone: '/assets/alertTone.mp3',
   // Timezone configuration
   TimeZone: 'America/Los_Angeles',
-  CallbackAlertTone: '/assets/alertTone.mp3',
-  CallbackTaskPriority: 50,
 };

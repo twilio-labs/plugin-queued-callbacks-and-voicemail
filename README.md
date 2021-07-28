@@ -160,6 +160,21 @@ Run the following commands in the plugin root directory. We will leverage the Tw
 4. To enable the plugin on your contact center, follow the suggested next step on the deployment confirmation. To enable it via the Flex UI, see the [Plugins Dashboard documentation](https://www.twilio.com/docs/flex/developer/plugins/dashboard#stage-plugin-changes).
 
 
+## Configurations
+
+The serverless implementation can be customized using the file [`options.private.js`](serverless/functions/options.private.js). Options include: 
+
+* `sayOptions`: Attributes for the `<Say>` verb used to prompt the customer. You can read more about these attributes and their values on [TwiML™ Voice: `<Say>`](https://www.twilio.com/docs/voice/twiml/say)
+* `holdMusicUrl`: Relative or absolute path to the audio file for hold music (default: `/assets/guitar_music.mp3`). If no domain is provided (i.e. relative path), the serverless domain will be used.
+* `getEwt`: Enable Estimated Waiting Time in voice prompt (default: `true`)
+* `statPeriod`: Time interval (in minutes) for Estimated Waiting Time stats evaluation (default: `5` minutes)
+* `getQueuePosition`: Enable Queue Position in voice prompt (default: `true`) 
+* `VoiceMailTaskPriority`: Priority for the Task generatared by the VoiceMail (default: `50`)
+* `VoiceMailAlertTone`: Relative or absolute path to the [ringback tone](https://www.twilio.com/docs/voice/twiml/dial#ringtone) that Twilio will play back to the Agent when calling a customer from a voice mail task (default: `/assets/alertTone.mp3`). If no domain is provided (i.e. relative path), the serverless domain will be used. This is not currently implemented in the Flex plugin, and it's for future usage
+* `CallbackTaskPriority`: Priority for the Task generatared by VoiceMail (default: `50`)
+* `CallbackAlertTone`: Relative or absolute path to the [ringback tone](https://www.twilio.com/docs/voice/twiml/dial#ringtone) that Twilio will play back to the Agent when calling a customer from a callback task (default: `/assets/alertTone.mp3`). If no domain is provided (i.e. relative path), the serverless domain will be used. This is not currently implemented in the Flex plugin, and it's for future usage
+* `TimeZone`: Timezone configuration. This is used to report time and date of voicemail (default `America/Los_Angeles`)
+
 ## License
 
 [MIT](http://www.opensource.org/licenses/mit-license.html)
