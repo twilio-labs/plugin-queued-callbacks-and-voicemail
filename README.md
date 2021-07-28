@@ -93,10 +93,10 @@ You need to deploy the functions associated with the Callback and Voicemail Flex
 
 #### Pre-deployment Steps
 
-1. From the root directory of your copy of the source code, change into `public/resources` and rename `.env.example` to `.env`.
+1. From the root directory of your copy of the source code, change into `serverless` and rename `.env.example` to `.env`.
 
 ```
-cd public/resources && mv .env.example .env
+cd serverless && mv .env.example .env
 ```
 
 2. Open `.env` with your text editor and modify TWILIO_WORKSPACE_SID with your Flex Task Assignment SID.
@@ -117,18 +117,18 @@ Env Variables
 ✔ Serverless project successfully deployed
 
 Deployment Details
-Domain: plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io
+Domain: plugin-queued-callbacks-voicemail-functions-xxxx-dev.twil.io
 Service:
   plugin-queued-callbacks-voicemail-functions 
 Functions:
-  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/inqueue-callback
-  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/inqueue-utils  
-  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/queue-menu
-  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/inqueue-voicemail
+  https://plugin-queued-callbacks-voicemail-functions-xxxx-dev.twil.io/inqueue-callback
+  https://plugin-queued-callbacks-voicemail-functions-xxxx-dev.twil.io/inqueue-utils  
+  https://plugin-queued-callbacks-voicemail-functions-xxxx-dev.twil.io/queue-menu
+  https://plugin-queued-callbacks-voicemail-functions-xxxx-dev.twil.io/inqueue-voicemail
 
 Assets:
-  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/assets/alertTone.mp3
-  https://plugin-queued-callbacks-voicemail-functions-2075-dev.twil.io/assets/guitar_music.mp3
+  https://plugin-queued-callbacks-voicemail-functions-xxxx-dev.twil.io/assets/alertTone.mp3
+  https://plugin-queued-callbacks-voicemail-functions-xxxx-dev.twil.io/assets/guitar_music.mp3
 ```
 
 _Note:_ Copy and save the domain returned when you deploy a function. You will need it in the next step. If you forget to copy the domain, you can also find it by navigating to [Functions > API](https://www.twilio.com/console/functions/api) in the Twilio Console.
