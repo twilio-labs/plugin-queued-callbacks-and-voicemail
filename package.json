@@ -1,6 +1,6 @@
 {
   "name": "plugin-queued-callbacks-and-voicemail",
-  "version": "1.0.0",
+  "version": "2.0.5",
   "private": true,
   "scripts": {
     "postinstall": "flex-plugin pre-script-check",
@@ -18,10 +18,13 @@
     "url-join": "^4.0.1"
   },
   "devDependencies": {
+    "@twilio-labs/serverless-api": "^5.2.1",
     "@twilio/flex-ui": "^1",
     "eslint": "^7.30.0",
     "eslint-config-twilio": "^1.35.1",
     "husky": "^7.0.1",
-    "react-test-renderer": "16.5.2"
+    "ora": "^5.4.1",
+    "react-test-renderer": "16.5.2",
+    "twilio": "^3.67.0"
   }
 }
