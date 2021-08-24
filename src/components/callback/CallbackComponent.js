@@ -36,6 +36,7 @@ export default class CallbackComponent extends React.Component {
       type: 'outbound',
       name: `Contact: ${to}`,
       phone: to,
+      conversations: {conversation_id: this.props.task.attributes.conversations.conversation_id}
     };
     await Flex.Actions.invokeAction('StartOutboundCall', {
       destination: to,
