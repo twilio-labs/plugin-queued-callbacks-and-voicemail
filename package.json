@@ -1,6 +1,6 @@
 {
   "name": "plugin-queued-callbacks-and-voicemail",
-  "version": "2.0.5",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "postinstall": "flex-plugin pre-script-check",
