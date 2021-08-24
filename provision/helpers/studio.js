@@ -69,7 +69,7 @@ async function createStudioFlow(twilioClient, workspaceSid, workflowSid, serverl
 
   const studioDefinition = getFlowDefinition(serverlessDomain, workflowSid, voiceChannel.sid);
   const studioFlows = await twilioClient.studio.flows.list({ limit: 100 });
-  const callbackVoiceMailFlow = studioFlows.find((flow) => (flow.friendlyName = 'CallbackVoiceMailFlow'));
+  const callbackVoiceMailFlow = studioFlows.find((flow) => flow.friendlyName === 'CallbackVoiceMailFlow');
   if (callbackVoiceMailFlow) {
     return twilioClient.studio.flows(callbackVoiceMailFlow.sid).update({
       status: 'published',
