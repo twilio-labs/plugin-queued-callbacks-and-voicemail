@@ -135,7 +135,7 @@ exports.handler = async function (context, event, callback) {
         }
       }
 
-      if (taskInfo.status === 'success' && getEwt) {
+      if (getEwt && taskInfo.status === 'success') {
         const workflowStats = await getWorkflowCummStats(
           client,
           context.TWILIO_WORKSPACE_SID,
@@ -162,7 +162,7 @@ exports.handler = async function (context, event, callback) {
       }
 
       //  Logic for Position in Queue
-      if (taskInfo.status === 'success' && getQueuePosition) {
+      if (getQueuePosition && taskInfo.status === 'success') {
         const taskPositionInfo = await getTaskPositionInQueue(client, taskInfo);
         switch (taskPositionInfo.position) {
           case 0:
