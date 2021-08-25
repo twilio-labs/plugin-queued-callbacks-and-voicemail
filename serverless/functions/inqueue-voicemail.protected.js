@@ -90,7 +90,7 @@ exports.handler = async function (context, event, callback) {
       //  Get taskSid based on taskSid or CallSid
       if (!taskSid) {
         const taskInfo = await getTask(context, CallSid);
-        ({ taskSid } = taskInfo.taskSid);
+        ({ taskSid } = taskInfo);
       }
 
       // Redirect Call to Voicemail main menu
