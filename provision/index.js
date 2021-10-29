@@ -37,13 +37,19 @@ inquirer
     // eslint-disable-next-line global-require
     twilioClient = require('twilio')(answers.username, answers.password);
 
+    // Interrupt the process if there are no phone numbers 
+    const phoneNumbers = await fetchIncomingPhoneNumbers(twilioClient);
+    if (!phoneNumbers || phoneNumbers.length === 0) {
+      throw new Error(`There are no numbers configured on your account ${answers.username}.\nProvision a new number before starting the script again`)
+    }
+
     // Step 2 - Fetch Flex Config
     spinner = ora('Fetching Flex configuration').start();
     const flexConfig = await getFlexConfig(answers.username, answers.password);
     if (flexConfig) {
       flexTaskAssignmentWorkspaceSid = flexConfig.taskrouter_workspace_sid;
     } else {
-      throw new Error('Error fetching Flex Config');
+      throw new Error('Error fetching Flex Config. Please check if this is a Flex project');
     }
 
     // Step 3 - Create Task Channels
@@ -102,7 +108,6 @@ inquirer
 
     // Associate a number to Studio flow
     spinner.stop();
-    const phoneNumbers = await fetchIncomingPhoneNumbers(twilioClient);
     const answer = await inquirer.prompt([
       {
         type: 'list',
@@ -125,7 +130,13 @@ inquirer
     );
   })
   .catch((err) => {
-    console.log(err);
+    let errorMessage = ''
+    if (err.message == 'Authenticate') {
+      errorMessage = 'Wrong Twilio credentials provided. Please check your Twilio Account SID and Auth Token'
+    } else {
+      errorMessage = err.message
+    }
+    console.log(errorMessage);
     if (spinner) {
       spinner.fail();
     }
