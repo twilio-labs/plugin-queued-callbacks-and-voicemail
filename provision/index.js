@@ -126,7 +126,7 @@ inquirer
     // Update plugin .env file
     fs.writeFileSync('.env', `REACT_APP_SERVICE_BASE_URL="https://${serverlessInfo.domain}"`);
     spinner.succeed(
-      'All done!\n\nYou can now deploy the plugin using:\n $ twilio flex:plugins:deploy --changelog="First version"\n',
+      'All done!\n\nYou can now deploy a minor or major version of the plugin ($ twilio flex:plugins:deploy --help to learn about the optional flags) using:\n $ twilio flex:plugins:deploy --changelog="First version"\n',
     );
   })
   .catch((err) => {
