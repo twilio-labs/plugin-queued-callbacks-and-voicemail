@@ -9,7 +9,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "flex-plugin-scripts": "4.1.0",
+    "flex-plugin-scripts": "4.3.0",
     "moment": "2.24.0",
     "moment-timezone": "0.5.28",
     "react": "16.5.2",
