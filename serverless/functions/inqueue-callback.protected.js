@@ -50,6 +50,9 @@ async function createCallbackTask(client, phoneNumber, taskInfo, ringback) {
     // eslint-disable-next-line camelcase
     ui_plugin: { cbCallButtonAccessibility: false },
     placeCallRetry: 1,
+        conversations: {
+      conversation_id: taskInfo.taskSid
+  },
   };
   try {
     await client.taskrouter.workspaces(taskInfo.workspaceSid).tasks.create({
