@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "moment": "^2.29.1",
+    "moment": "^2.29.4",
     "moment-timezone": "^0.5.33",
     "twilio-flex-token-validator": "^1.5.6"
   }
