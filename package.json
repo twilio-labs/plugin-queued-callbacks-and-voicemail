@@ -18,7 +18,7 @@
     "url-join": "^4.0.1"
   },
   "devDependencies": {
-    "@twilio-labs/serverless-api": "^5.2.1",
+    "@twilio-labs/serverless-api": "^5.4.3",
     "@twilio/flex-ui": "^1",
     "eslint": "^7.30.0",
     "eslint-config-twilio": "^1.35.1",
