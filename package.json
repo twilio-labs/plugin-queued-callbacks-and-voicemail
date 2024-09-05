@@ -11,7 +11,7 @@
   "dependencies": {
     "flex-plugin-scripts": "4.1.0",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.28",
+    "moment-timezone": "0.5.41",
     "react": "16.5.2",
     "react-dom": "16.5.2",
     "react-moment": "0.9.7",
