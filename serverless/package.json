@@ -7,14 +7,14 @@
     "start": "twilio-run --env"
   },
   "devDependencies": {
-    "twilio": "^3.65.0",
-    "twilio-run": "^3.1.1"
+    "twilio": "^4.19.3",
+    "twilio-run": "^4.0.0"
   },
   "engines": {
     "node": "12"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.15.0",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
     "twilio-flex-token-validator": "^1.5.6"
